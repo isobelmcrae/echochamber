@@ -17,6 +17,7 @@ bun run test:run       # vitest, single run
 bun run test:run src/lib/server/db.test.ts   # one file
 bun run test:run -t "runs a query"           # one test by name
 bun run auth:migrate   # create/update Better Auth tables in DATABASE_PATH
+bun run seed           # demo accounts alice / bob (password: echochamber) + a shared room
 ```
 
 ## Gates — every change
@@ -35,7 +36,7 @@ Do not silence a gate (disabling rules, `// @ts-ignore`, skipping tests) to get 
 - Red → green → refactor. Write the failing test first, see it fail, then write the minimum code that passes it.
 - **Bugs:** a bug fix needs a regression test that fails without the fix and passes with it. Fixes without a test are not done.
 - Tests live next to the code as `src/**/*.{test,spec}.{js,ts}` and run in the `node` environment (see `vite.config.ts`).
-- In tests, `DATABASE_PATH` is `:memory:`, so each test run gets a fresh, empty SQLite database. Tests import modules that read `$app/env/private` and need `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` set (from `.env` locally, from the workflow env in CI). Without them they fail with `env_invalid`.
+- In tests, `DATABASE_PATH` is `:memory:` (from `.env.test`), so each test file gets a fresh SQLite database; `src/test-setup.ts` creates Better Auth's tables and runs our migrations. Vitest writes SvelteKit's generated files to its own `outDir` so it never hands a running dev server the test database. Use `createUser`/`addMember` from `src/lib/server/test-utils.ts`. Tests never touch the network: the setup stubs `unfurl`. Tests import modules that read `$app/env/private` and need `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` set (from `.env` locally, from the workflow env in CI). Without them they fail with `env_invalid`.
 
 ## Principles
 
@@ -86,6 +87,20 @@ SvelteKit 3 + Svelte 5 (runes forced on for all project files) with the experime
 
 - **Env vars** are declared in `src/env.ts` with `defineEnvVars` (descriptions, defaults, validation) and read server-side via `import * as env from "$app/env/private"`. To add a variable, declare it there and in `.env.example`.
 - **Imports:** use the Node subpath alias `#lib/*` (from `package.json` `imports`) for `src/lib`, with explicit `.ts` extensions (e.g. `#lib/server/auth.ts`).
-- **Database:** `src/lib/server/db.ts` exports a single Kysely instance over `better-sqlite3` (WAL, foreign keys on). App tables are typed in its `DB` interface — add each new table there. Better Auth uses the same instance and owns its own tables (`user`, `session`, `account`, `verification`). Change those with `bun run auth:migrate`, never by hand.
+- **Database:** `src/lib/server/db.ts` exports a single Kysely instance over `better-sqlite3` (WAL, foreign keys on). App tables are typed in its `DB` interface — add each new table there, with a migration in `src/lib/server/migrations/` registered in `migrate.ts` (run on startup by the `init` hook). Never edit a migration that has shipped. Inside `db.transaction()`, query only through `tx`: SQLite has one connection, so touching `db` there deadlocks. Better Auth uses the same instance and owns its own tables (`user`, `session`, `account`, `verification`). The `init` hook creates/updates them (`migrateAuth()` in `auth.ts`) before our migrations; `bun run auth:migrate` does the same by hand. Never change them by hand.
 - **Auth:** `src/lib/server/auth.ts` configures Better Auth (email + password). The `sveltekitCookies` plugin must stay **last** in `plugins`. `src/hooks.server.ts` resolves the session on each request, puts it on `event.locals.session` / `event.locals.user` (types are inferred from `auth` in `src/app.d.ts`), and hands the request to `svelteKitHandler`, which serves `/api/auth/*`. Client code uses `authClient` from `src/lib/auth-client.ts`.
+- **Domain:** `src/lib/server/{rooms,invites,links,comments}.ts` hold the business rules and take the acting user's id. Room permissions live in the table in `permissions.ts` (`requireMember(roomId, userId, action?)`: 404 for non-members, 403 without permission). Domain functions throw SvelteKit `error()`s and publish change events after every write.
+- **Remote functions** in `src/lib/remote/*.remote.ts` are thin: `requireUser()`, valibot input, call the domain. Remote files may only export remote functions; shared schemas go in `src/lib/schemas.ts`.
+- **Live updates:** reads are `query.live` built with `live(topics, load)` (`src/lib/server/live.ts`), which re-runs `load` whenever `events.ts` publishes on a topic (`room:<id>`, `user:<id>`). The bus is in-process, so this assumes one Node process. Forms submit with `form.submit().updates()` since live queries already refresh.
+- **Link previews:** `unfurl.ts` fetches OpenGraph/oEmbed metadata with SSRF guards (public addresses only, checked in the socket's DNS lookup on every redirect hop); `previews.ts` runs it in the background after a link is posted and notifies the rooms that shared it.
 - Anything under `src/lib/server/` is server-only. Never import it from client code.
+
+## Zenith
+
+Use the checked-in .agents/skills/zenith-setup/SKILL.md to prepare this repository for Zenith. Read the Compose, test, and publish skills there as the work progresses. Run `zenith check` after adapting Dockerfile and zenith-compose.yml to the actual app. Keep secrets out of Git.
+
+You do not need Docker installed locally; Zenith builds and runs containers on the platform, so use `zenith up` for previews. Zenith also provides outbound app email through its SMTP relay. Configure x-zenith.env using the Compose skill for previews and published apps.
+
+- The `Dockerfile` builds with Bun on Node 24 (better-sqlite3 v13 compiles from source, so the build stages carry python3/make/g++) and runs `node build` on port 3000. The SQLite file lives on the `data` volume at `/data/echochamber.db`.
+- `x-zenith.env` generates `BETTER_AUTH_SECRET` and aliases `BETTER_AUTH_URL` to `ZENITH_PUBLIC_URL`. The app sends no email, so no SMTP mapping.
+- adapter-node (SvelteKit 3) has no `ORIGIN` env var: it derives the request origin from the `Host` header and defaults the protocol to `https`. Better Auth only serves `/api/auth/*` when that origin matches `BETTER_AUTH_URL`, so a production build served over plain http 404s on auth. That's fine behind Zenith's HTTPS proxy; to test the image locally, set `BETTER_AUTH_URL=https://localhost:3000`.

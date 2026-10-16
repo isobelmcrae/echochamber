@@ -1,0 +1,35 @@
+x-zenith:
+  catalog:
+    name: echochamber
+    description: Private rooms for sharing links and talking about them in threaded comments.
+    authors: [Neel Sharma]
+    source: https://github.com/neelkarma/echochamber
+    license: UNLICENSED
+    tags: [links, chat, sveltekit]
+  expose:
+    - { service: web, port: 3000, web: true }
+  storage:
+    data:
+      volume: data
+      label: Database
+      description: SQLite database with accounts, rooms, links and comments.
+  env:
+    BETTER_AUTH_SECRET:
+      generate: "([A-Za-z0-9_-]{32})([A-Za-z0-9_-]{16})"
+      services: [web]
+    BETTER_AUTH_URL:
+      alias: ZENITH_PUBLIC_URL
+      services: [web]
+
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_PATH: /data/echochamber.db
+    volumes:
+      - data:/data
+
+volumes:
+  data:

@@ -14,12 +14,15 @@ export default defineConfig({
         experimental: { async: true },
       },
       adapter: adapter(),
+      // Vitest gets its own generated files: they inline env values, and sharing
+      // .svelte-kit with a running dev server would hand it the test database.
+      outDir: process.env.VITEST ? "node_modules/.cache/svelte-kit-vitest" : undefined,
       experimental: { remoteFunctions: true },
     }),
   ],
   test: {
     include: ["src/**/*.{test,spec}.{js,ts}"],
     environment: "node",
-    env: { DATABASE_PATH: ":memory:" },
+    setupFiles: ["src/test-setup.ts"],
   },
 });

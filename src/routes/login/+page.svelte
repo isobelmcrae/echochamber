@@ -1,0 +1,63 @@
+<script lang="ts">
+	import { goto, invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
+	import { authClient } from '#lib/auth-client.ts';
+	import { safeNext } from '#lib/safe-next.ts';
+	import { Button } from '#lib/components/ui/button/index.js';
+	import * as Card from '#lib/components/ui/card/index.js';
+	import * as Field from '#lib/components/ui/field/index.js';
+	import { Input } from '#lib/components/ui/input/index.js';
+
+	const next = $derived(safeNext(page.url.searchParams.get('next')));
+	let login = $state('');
+	let password = $state('');
+	let error = $state<string | null>(null);
+	let pending = $state(false);
+
+	async function submit(event: SubmitEvent) {
+		event.preventDefault();
+		pending = true;
+		const result = login.includes('@')
+			? await authClient.signIn.email({ email: login, password })
+			: await authClient.signIn.username({ username: login, password });
+		pending = false;
+		if (result.error) {
+			error = result.error.message ?? 'Could not sign in';
+			return;
+		}
+		await invalidateAll();
+		await goto(next);
+	}
+</script>
+
+<Card.Root class="mx-auto mt-12 w-full max-w-sm">
+	<Card.Header>
+		<Card.Title>Sign in</Card.Title>
+		<Card.Description>Welcome back to your rooms.</Card.Description>
+	</Card.Header>
+	<Card.Content>
+		<form onsubmit={submit}>
+			<Field.Group>
+				<Field.Field>
+					<Field.Label for="login">Username or email</Field.Label>
+					<Input id="login" bind:value={login} autocomplete="username" required />
+				</Field.Field>
+				<Field.Field>
+					<Field.Label for="password">Password</Field.Label>
+					<Input
+						id="password"
+						type="password"
+						bind:value={password}
+						autocomplete="current-password"
+						required
+					/>
+				</Field.Field>
+				{#if error}<Field.Error>{error}</Field.Error>{/if}
+				<Button type="submit" disabled={pending}>Sign in</Button>
+				<Field.Description class="text-center">
+					New here? <a href="/signup?next={encodeURIComponent(next)}">Create an account</a>
+				</Field.Description>
+			</Field.Group>
+		</form>
+	</Card.Content>
+</Card.Root>
