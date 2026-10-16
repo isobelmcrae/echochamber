@@ -4,7 +4,7 @@ x-zenith:
     description: Private rooms for sharing links and talking about them in threaded comments.
     authors: [Neel Sharma]
     source: https://github.com/neelkarma/echochamber
-    license: UNLICENSED
+    license: MIT
     tags: [links, chat, sveltekit]
   expose:
     - { service: web, port: 3000, web: true }
