@@ -1,6 +1,7 @@
 import tailwindcss from "@tailwindcss/vite";
 import adapter from "@sveltejs/adapter-node";
 import { sveltekit } from "@sveltejs/kit/vite";
+import Icons from "unplugin-icons/vite";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
@@ -19,6 +20,7 @@ export default defineConfig({
       outDir: process.env.VITEST ? "node_modules/.cache/svelte-kit-vitest" : undefined,
       experimental: { remoteFunctions: true },
     }),
+    Icons({ compiler: "svelte" }),
   ],
   test: {
     include: ["src/**/*.{test,spec}.{js,ts}"],
