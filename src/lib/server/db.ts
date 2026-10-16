@@ -30,6 +30,7 @@ interface RoomMemberTable {
   user_id: string;
   role: Role;
   joined_at: number;
+  last_read_at: Generated<number>;
 }
 
 interface RoomInviteTable {

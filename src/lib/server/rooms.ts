@@ -62,6 +62,17 @@ export async function listRooms(userId: string) {
       "room.title",
       "room.updated_at",
       "me.role",
+      eb.fn
+        .coalesce(
+          eb
+            .selectFrom("link")
+            .select((eb) => eb.fn.countAll<number>().as("n"))
+            .whereRef("link.room_id", "=", "room.id")
+            .whereRef("link.created_at", ">", "me.last_read_at")
+            .where("link.author_id", "is not", userId),
+          eb.lit(0),
+        )
+        .as("unread"),
       jsonArrayFrom(
         eb
           .selectFrom("room_member")
@@ -73,6 +84,18 @@ export async function listRooms(userId: string) {
     ])
     .orderBy("room.updated_at", "desc")
     .execute();
+}
+
+/** Mark everything in the room as seen by this member, clearing its unread count. */
+export async function markRead(userId: string, roomId: string) {
+  await requireMember(roomId, userId);
+  await db
+    .updateTable("room_member")
+    .set({ last_read_at: Date.now() })
+    .where("room_id", "=", roomId)
+    .where("user_id", "=", userId)
+    .execute();
+  publish(`user:${userId}`);
 }
 
 export async function getRoom(roomId: string, userId: string) {

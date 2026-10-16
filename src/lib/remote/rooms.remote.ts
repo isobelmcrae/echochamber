@@ -28,6 +28,10 @@ export const room = query.live(Id, (roomId) => {
   return live([`room:${roomId}`], () => rooms.getRoom(roomId, me.id));
 });
 
+export const markRead = command(Id, async (roomId) => {
+  await rooms.markRead(requireUser().id, roomId);
+});
+
 export const createRoom = form(
   v.object({ title: Title, with: v.optional(v.pipe(v.string(), v.trim())) }),
   async ({ title, with: username }, issue) => {

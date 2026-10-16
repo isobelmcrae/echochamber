@@ -1,15 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { untrack } from 'svelte';
 	import { attempt } from '#lib/attempt.ts';
 	import LinkCard from '#lib/components/LinkCard.svelte';
 	import { feed, olderLinks, postLink } from '#lib/remote/links.remote.ts';
-	import { room as liveRoom } from '#lib/remote/rooms.remote.ts';
+	import { room as liveRoom, markRead } from '#lib/remote/rooms.remote.ts';
 	import { roomName } from '#lib/room-name.ts';
 	import { Button } from '#lib/components/ui/button/index.js';
-	import * as Card from '#lib/components/ui/card/index.js';
+	import * as Empty from '#lib/components/ui/empty/index.js';
 	import * as Field from '#lib/components/ui/field/index.js';
-	import { Input } from '#lib/components/ui/input/index.js';
-	import { Textarea } from '#lib/components/ui/textarea/index.js';
+	import * as InputGroup from '#lib/components/ui/input-group/index.js';
+	import LinkIcon from '@lucide/svelte/icons/link';
+	import SettingsIcon from '@lucide/svelte/icons/settings';
 	import type { PageProps } from './$types';
 
 	type Link = Awaited<ReturnType<typeof feed>>['links'][number];
@@ -19,6 +21,15 @@
 	const room = $derived(await liveRoom(roomId));
 	const latest = $derived(await feed(roomId));
 
+	// Opening the room, and each new link while it's open, clears its unread badge.
+	const newest = $derived(latest.links[0]?.id);
+	$effect(() => {
+		void newest;
+		const id = roomId;
+		// Untracked: the command reads state that markRead's own update changes, which would loop.
+		untrack(() => markRead(id).catch(() => {}));
+	});
+
 	// Older pages are fetched on demand and appended below the live first page.
 	let older = $state<Link[]>([]);
 	let olderCursor = $state<string | null | undefined>(undefined);
@@ -27,6 +38,9 @@
 		...latest.links,
 		...older.filter((l) => !latest.links.some((n) => n.id === l.id))
 	]);
+
+	// The note field opens up once there's a link to annotate.
+	const drafting = $derived(!!postLink.fields.url.value());
 
 	async function loadOlder() {
 		if (!cursor) return;
@@ -38,46 +52,27 @@
 	}
 </script>
 
-<div class="space-y-6">
+<div class="flex flex-1 flex-col gap-6">
 	<div class="flex items-center justify-between gap-4">
 		<h1 class="truncate text-2xl font-semibold">{roomName(room, data.me.id)}</h1>
-		<Button variant="outline" size="sm" href="/rooms/{room.id}/settings">
+		<Button variant="ghost" size="sm" href="/rooms/{room.id}/settings">
+			<SettingsIcon data-icon="inline-start" />
 			{room.role === 'admin' ? 'Manage' : 'Members'}
 		</Button>
 	</div>
 
-	<Card.Root>
-		<Card.Content>
-			<form
-				{...postLink.enhance(async (form) => {
-					if (await form.submit().updates()) form.element.reset();
-				})}
-				class="space-y-3"
-			>
-				<input {...postLink.fields.roomId.as('hidden', roomId)} />
-				<Field.Field>
-					<Input
-						{...postLink.fields.url.as('text')}
-						placeholder="Paste a link…"
-						autocomplete="off"
-						inputmode="url"
-					/>
-					{#each postLink.fields.url.issues() ?? [] as issue (issue.message)}
-						<Field.Error>{issue.message}</Field.Error>
-					{/each}
-				</Field.Field>
-				<Textarea {...postLink.fields.note.as('text')} placeholder="Add a note (optional)" rows={2} />
-				<div class="flex justify-end">
-					<Button type="submit" disabled={!!postLink.pending}>Share</Button>
-				</div>
-			</form>
-		</Card.Content>
-	</Card.Root>
-
 	{#if links.length === 0}
-		<p class="text-muted-foreground py-8 text-center">Nothing shared yet. Paste the first link.</p>
+		<Empty.Root class="flex-1">
+			<Empty.Header>
+				<Empty.Media variant="icon">
+					<LinkIcon />
+				</Empty.Media>
+				<Empty.Title>Nothing shared yet</Empty.Title>
+				<Empty.Description>Paste the first link below.</Empty.Description>
+			</Empty.Header>
+		</Empty.Root>
 	{:else}
-		<ul class="space-y-4">
+		<ul class="flex flex-col gap-4">
 			{#each links as link (link.id)}
 				<li>
 					<LinkCard
@@ -95,4 +90,50 @@
 			</div>
 		{/if}
 	{/if}
+
+	<form
+		{...postLink.enhance(async (form) => {
+			if (await form.submit().updates()) form.element.reset();
+		})}
+		class="sticky bottom-4 mt-auto flex flex-col gap-1"
+	>
+		<input {...postLink.fields.roomId.as('hidden', roomId)} />
+		<div class="bg-background rounded-md shadow-lg">
+			<InputGroup.Root>
+				{#if !drafting}
+					<InputGroup.Addon>
+						<LinkIcon />
+					</InputGroup.Addon>
+				{/if}
+				<InputGroup.Input
+					{...postLink.fields.url.as('text')}
+					placeholder="Paste something…"
+					autocomplete="off"
+					inputmode="url"
+					aria-label="Link"
+				/>
+				{#if drafting}
+					<InputGroup.Textarea
+						{...postLink.fields.note.as('text')}
+						placeholder="Add a note (optional)"
+						rows={2}
+						aria-label="Note"
+					/>
+					<InputGroup.Addon align="block-end" class="border-t">
+						<InputGroup.Text>Press Enter to share</InputGroup.Text>
+						<InputGroup.Button
+							type="submit"
+							variant="default"
+							size="sm"
+							class="ml-auto"
+							disabled={!!postLink.pending}>Share</InputGroup.Button
+						>
+					</InputGroup.Addon>
+				{/if}
+			</InputGroup.Root>
+		</div>
+		{#each postLink.fields.url.issues() ?? [] as issue (issue.message)}
+			<Field.Error>{issue.message}</Field.Error>
+		{/each}
+	</form>
 </div>

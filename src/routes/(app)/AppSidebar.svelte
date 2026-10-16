@@ -1,0 +1,143 @@
+<script lang="ts">
+	import { goto, invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
+	import { authClient } from '#lib/auth-client.ts';
+	import type { home } from '#lib/remote/rooms.remote.ts';
+	import { roomName } from '#lib/room-name.ts';
+	import * as Avatar from '#lib/components/ui/avatar/index.js';
+	import { Badge } from '#lib/components/ui/badge/index.js';
+	import { Button } from '#lib/components/ui/button/index.js';
+	import * as DropdownMenu from '#lib/components/ui/dropdown-menu/index.js';
+	import * as Sidebar from '#lib/components/ui/sidebar/index.js';
+	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
+	import LogOutIcon from '@lucide/svelte/icons/log-out';
+	import MailIcon from '@lucide/svelte/icons/mail';
+	import PlusIcon from '@lucide/svelte/icons/plus';
+
+	type Room = Awaited<ReturnType<typeof home>>['rooms'][number];
+
+	let {
+		rooms,
+		invites,
+		me,
+		onNewRoom
+	}: {
+		rooms: Room[];
+		invites: number;
+		me: { id: string; name: string; username: string };
+		onNewRoom: () => void;
+	} = $props();
+
+	const sidebar = Sidebar.useSidebar();
+
+	function initials(name: string) {
+		return name
+			.split(/[\s,]+/)
+			.filter(Boolean)
+			.slice(0, 2)
+			.map((word) => word[0]!.toUpperCase())
+			.join('');
+	}
+
+	async function signOut() {
+		await authClient.signOut();
+		await invalidateAll();
+		await goto('/login');
+	}
+</script>
+
+<Sidebar.Root>
+	<Sidebar.Header class="gap-3 p-4">
+		<a href="/" class="text-lg font-semibold tracking-tight">Echo Chamber</a>
+		<Button variant="outline" onclick={onNewRoom}>
+			<PlusIcon data-icon="inline-start" />
+			New room
+		</Button>
+	</Sidebar.Header>
+
+	<Sidebar.Content>
+		{#if invites > 0}
+			<Sidebar.Group>
+				<Sidebar.Menu>
+					<Sidebar.MenuItem>
+						<Sidebar.MenuButton isActive={page.url.pathname === '/'}>
+							{#snippet child({ props })}
+								<a href="/" {...props} onclick={() => sidebar.setOpenMobile(false)}>
+									<MailIcon />
+									<span>Invites</span>
+								</a>
+							{/snippet}
+						</Sidebar.MenuButton>
+						<Sidebar.MenuBadge>{invites}</Sidebar.MenuBadge>
+					</Sidebar.MenuItem>
+				</Sidebar.Menu>
+			</Sidebar.Group>
+		{/if}
+
+		<Sidebar.Group>
+			<Sidebar.GroupLabel>Rooms</Sidebar.GroupLabel>
+			<Sidebar.GroupContent>
+				<Sidebar.Menu>
+					{#each rooms as room (room.id)}
+						{@const name = roomName(room, me.id)}
+						{@const active = page.params.roomId === room.id}
+						<Sidebar.MenuItem>
+							<Sidebar.MenuButton size="lg" isActive={active}>
+								{#snippet child({ props })}
+									<a
+										href="/rooms/{room.id}"
+										{...props}
+										onclick={() => sidebar.setOpenMobile(false)}
+									>
+										<Avatar.Root class="size-8">
+											<Avatar.Fallback>{initials(name)}</Avatar.Fallback>
+										</Avatar.Root>
+										<span class="flex-1 truncate">{name}</span>
+										{#if !active && room.unread > 0}
+											<Badge aria-label="{room.unread} unread">
+												{room.unread > 9 ? '9+' : room.unread}
+											</Badge>
+										{/if}
+									</a>
+								{/snippet}
+							</Sidebar.MenuButton>
+						</Sidebar.MenuItem>
+					{:else}
+						<p class="text-muted-foreground px-2 text-sm">No rooms yet.</p>
+					{/each}
+				</Sidebar.Menu>
+			</Sidebar.GroupContent>
+		</Sidebar.Group>
+	</Sidebar.Content>
+
+	<Sidebar.Footer>
+		<Sidebar.Menu>
+			<Sidebar.MenuItem>
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger>
+						{#snippet child({ props })}
+							<Sidebar.MenuButton size="lg" {...props}>
+								<Avatar.Root class="size-8">
+									<Avatar.Fallback>{initials(me.name)}</Avatar.Fallback>
+								</Avatar.Root>
+								<div class="grid flex-1 text-left leading-tight">
+									<span class="truncate font-medium">{me.name}</span>
+									<span class="text-muted-foreground truncate text-xs">@{me.username}</span>
+								</div>
+								<ChevronsUpDownIcon class="ml-auto" />
+							</Sidebar.MenuButton>
+						{/snippet}
+					</DropdownMenu.Trigger>
+					<DropdownMenu.Content side="top" align="start" class="w-(--bits-dropdown-menu-anchor-width)">
+						<DropdownMenu.Group>
+							<DropdownMenu.Item onclick={signOut}>
+								<LogOutIcon />
+								Sign out
+							</DropdownMenu.Item>
+						</DropdownMenu.Group>
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
+			</Sidebar.MenuItem>
+		</Sidebar.Menu>
+	</Sidebar.Footer>
+</Sidebar.Root>

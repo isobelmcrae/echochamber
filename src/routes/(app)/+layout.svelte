@@ -1,25 +1,29 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation';
-	import { authClient } from '#lib/auth-client.ts';
-	import { Button } from '#lib/components/ui/button/index.js';
+	import { home } from '#lib/remote/rooms.remote.ts';
+	import * as Sidebar from '#lib/components/ui/sidebar/index.js';
+	import AppSidebar from './AppSidebar.svelte';
+	import NewRoomDialog from './NewRoomDialog.svelte';
+	import { setNewRoom } from './new-room.ts';
 	import type { LayoutProps } from './$types';
 
 	let { children, data }: LayoutProps = $props();
+	// Context must be set before the first `await`.
+	let newRoomOpen = $state(false);
+	setNewRoom({ open: () => (newRoomOpen = true) });
 
-	async function signOut() {
-		await authClient.signOut();
-		await invalidateAll();
-		await goto('/login');
-	}
+	const { rooms, invites } = $derived(await home());
 </script>
 
-<header class="flex items-center justify-between py-4">
-	<a href="/" class="text-lg font-semibold tracking-tight">Echo Chamber</a>
-	<div class="flex items-center gap-3 text-sm">
-		<span class="text-muted-foreground">@{data.me.username}</span>
-		<Button variant="ghost" size="sm" onclick={signOut}>Sign out</Button>
-	</div>
-</header>
-<main class="flex-1 pb-12">
-	{@render children()}
-</main>
+<Sidebar.Provider>
+	<AppSidebar {rooms} invites={invites.length} me={data.me} onNewRoom={() => (newRoomOpen = true)} />
+	<Sidebar.Inset>
+		<header class="flex h-12 items-center border-b px-2 md:hidden">
+			<Sidebar.Trigger />
+		</header>
+		<div class="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-6">
+			{@render children()}
+		</div>
+	</Sidebar.Inset>
+</Sidebar.Provider>
+
+<NewRoomDialog bind:open={newRoomOpen} />

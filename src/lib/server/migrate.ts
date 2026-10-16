@@ -5,6 +5,7 @@ import * as invites from "./migrations/0002_invites.ts";
 import * as links from "./migrations/0003_links.ts";
 import * as comments from "./migrations/0004_comments.ts";
 import * as inviteRole from "./migrations/0005_invite_role.ts";
+import * as lastRead from "./migrations/0006_last_read.ts";
 
 // Ordered by key. Never edit a migration that has shipped; add a new one.
 const migrations = {
@@ -13,6 +14,7 @@ const migrations = {
   "0003_links": links,
   "0004_comments": comments,
   "0005_invite_role": inviteRole,
+  "0006_last_read": lastRead,
 };
 
 // Takes the database rather than importing db.ts so scripts can run it too.

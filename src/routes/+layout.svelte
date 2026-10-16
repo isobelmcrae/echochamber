@@ -2,6 +2,7 @@
 	import './layout.css';
 	import favicon from '#lib/assets/favicon.svg';
 	import { Toaster } from '#lib/components/ui/sonner/index.js';
+	import { ModeWatcher } from 'mode-watcher';
 	import { onMount } from 'svelte';
 	import type { LayoutProps } from './$types';
 
@@ -17,8 +18,7 @@
 	<title>Echo Chamber</title>
 </svelte:head>
 
+<ModeWatcher />
 <Toaster />
 
-<div class="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-4">
-	{@render children()}
-</div>
+{@render children()}

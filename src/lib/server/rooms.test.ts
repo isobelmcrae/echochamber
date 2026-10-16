@@ -6,10 +6,12 @@ import {
   kickMember,
   leaveRoom,
   listRooms,
+  markRead,
   renameRoom,
   setRole,
 } from "./rooms.ts";
 import { acceptInvite } from "./invites.ts";
+import { postLink } from "./links.ts";
 import { addMember, createUser } from "./test-utils.ts";
 
 describe("rooms", () => {
@@ -111,5 +113,35 @@ describe("createRoom with someone", () => {
       status: 404,
     });
     expect(await listRooms(alice.id)).toEqual([]);
+  });
+});
+
+describe("unread links", () => {
+  beforeEach(() => vi.useFakeTimers({ toFake: ["Date"] }));
+  afterEach(() => vi.useRealTimers());
+
+  const unread = async (userId: string, roomId: string) =>
+    (await listRooms(userId)).find((r) => r.id === roomId)?.unread;
+
+  it("counts other people's links posted since the member last read the room", async () => {
+    const [alice, bob] = [await createUser(), await createUser()];
+    const roomId = await createRoom(alice.id, {});
+    await addMember(roomId, bob.id, "member");
+    await markRead(bob.id, roomId);
+    vi.setSystemTime(Date.now() + 1000);
+    await postLink(alice.id, roomId, { url: "https://example.com/a" });
+    await postLink(alice.id, roomId, { url: "https://example.com/b" });
+    await postLink(bob.id, roomId, { url: "https://example.com/c" });
+    expect(await unread(bob.id, roomId)).toBe(2);
+    expect(await unread(alice.id, roomId)).toBe(1);
+
+    await markRead(bob.id, roomId);
+    expect(await unread(bob.id, roomId)).toBe(0);
+  });
+
+  it("only lets members mark a room read", async () => {
+    const [alice, bob] = [await createUser(), await createUser()];
+    const roomId = await createRoom(alice.id, {});
+    await expect(markRead(bob.id, roomId)).rejects.toMatchObject({ status: 404 });
   });
 });
