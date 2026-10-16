@@ -1,54 +1,27 @@
-# sv
+# echochamber
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Private rooms for sharing links with friends. Invite people to a room, post
+links (with automatic previews), and talk about them in comments, all updating
+live. Built with SvelteKit, Svelte 5, Better Auth, and SQLite.
 
-## Creating a project
+## Local development
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project
-npx sv create my-app
-```
-
-To recreate this project with the same configuration:
+Requires [Bun](https://bun.sh) and Node 24 (better-sqlite3 builds a native
+binding on install, so you also need python3, make, and a C++ compiler).
 
 ```sh
-# recreate this project
-bun x sv@1.1.1 create --template minimal --types ts --add tailwindcss="plugins:none" sveltekit-adapter="adapter:node" experimental="features:async,remoteFunctions" --install bun echochamber
+bun install --frozen-lockfile
+cp .env.example .env
+# set BETTER_AUTH_SECRET in .env, e.g. to the output of: openssl rand -base64 32
+bun run seed   # optional: demo users alice / bob (password: echochamber)
+bun run dev    # http://localhost:5173
 ```
 
-## Adding features
+The database (`local.db` by default) is created and migrated when the dev
+server starts.
 
-Add features to your project with `sv add`:
+Before committing, run the same checks as CI:
 
 ```sh
-npx sv add
+bun run check && bun run lint && bun run format:check && bun run test:run
 ```
-
-For example, to add Tailwind CSS:
-
-```sh
-npx sv add tailwindcss
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
