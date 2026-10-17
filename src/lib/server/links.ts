@@ -1,5 +1,5 @@
 import { error } from "@sveltejs/kit";
-import type { ExpressionBuilder } from "kysely";
+import { type ExpressionBuilder, sql } from "kysely";
 import { jsonObjectFrom } from "kysely/helpers/sqlite";
 import { normalizeUrl } from "#lib/url.ts";
 import { type DB, db } from "./db.ts";
@@ -217,4 +217,42 @@ export async function deleteLink(actorId: string, linkId: string) {
   await db.deleteFrom("link").where("id", "=", linkId).execute();
   publish(`room:${link.room_id}`);
   return link.room_id;
+}
+
+/**
+ * An FTS5 query matching every word of the user's text as a literal substring. The
+ * trigram index can't match words under 3 characters, so those are dropped.
+ */
+function matchQuery(text: string) {
+  const words = text.split(/\s+/).filter((w) => [...w].length >= 3);
+  return words.length ? words.map((w) => `"${w.replaceAll('"', '""')}"`).join(" ") : null;
+}
+
+/**
+ * Links in the user's rooms matching every word of `text` in their note, URL, preview,
+ * poster, comments or commenters, best match first. `comment_match` is the matching
+ * stretch of the comments, with \u0002 and \u0003 around each hit, if one matched.
+ */
+export async function searchLinks(userId: string, text: string, { limit = 50 } = {}) {
+  const match = matchQuery(text);
+  if (!match) return [];
+  const rows = await selectLinks()
+    .innerJoin("link_fts", "link_fts.link_id", "link.id")
+    .innerJoin("room_member as me", (j) =>
+      j.onRef("me.room_id", "=", "link.room_id").on("me.user_id", "=", userId),
+    )
+    .select([
+      "me.role",
+      sql<string>`snippet(link_fts, 5, char(2), char(3), '…', 64)`.as("comment_match"),
+    ])
+    .where(sql<boolean>`link_fts MATCH ${match}`)
+    // Weights per column, in table order: link_id, author, title, note, url, comments, commenters.
+    .orderBy(sql`bm25(link_fts, 0, 5, 4, 3, 1, 2, 1)`)
+    .orderBy("link.created_at", "desc")
+    .limit(limit)
+    .execute();
+  return rows.map((r) => ({
+    ...r,
+    comment_match: r.comment_match.includes("\u0002") ? r.comment_match : null,
+  }));
 }

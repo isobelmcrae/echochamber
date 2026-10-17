@@ -82,3 +82,8 @@ export const editComment = command(
 export const deleteComment = command(Id, async (commentId) => {
   await comments.deleteComment(requireUser().id, commentId);
 });
+
+/** Links across the user's rooms matching every word of the text, best match first. */
+export const search = query(v.pipe(v.string(), v.maxLength(200)), (text) =>
+  links.searchLinks(requireUser().id, text),
+);

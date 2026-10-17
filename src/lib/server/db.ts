@@ -97,6 +97,17 @@ interface CommentTable {
   deleted_at: number | null;
 }
 
+/** FTS5 index over links, kept in step by triggers (migration 0011). Read-only here. */
+interface LinkFtsTable {
+  link_id: string;
+  author: string;
+  title: string;
+  note: string;
+  url: string;
+  comments: string;
+  commenters: string;
+}
+
 export interface DB {
   user: UserTable;
   room: RoomTable;
@@ -107,6 +118,7 @@ export interface DB {
   link: LinkTable;
   link_seen: LinkSeenTable;
   comment: CommentTable;
+  link_fts: LinkFtsTable;
 }
 
 const JSON_COLUMN = /^\$\[\d+\]\."(members|author|preview|ink)"$/;

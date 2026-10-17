@@ -18,6 +18,7 @@
 	import MonitorIcon from '@lucide/svelte/icons/monitor';
 	import MoonIcon from '@lucide/svelte/icons/moon';
 	import PlusIcon from '@lucide/svelte/icons/plus';
+	import SearchIcon from '@lucide/svelte/icons/search';
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import { setMode, userPrefersMode } from 'mode-watcher';
 	import AboutDialog from './AboutDialog.svelte';
@@ -63,6 +64,16 @@
 						<a href="/" {...props} onclick={() => sidebar.setOpenMobile(false)}>
 							<HouseIcon />
 							<span>Home</span>
+						</a>
+					{/snippet}
+				</Sidebar.MenuButton>
+			</Sidebar.MenuItem>
+			<Sidebar.MenuItem>
+				<Sidebar.MenuButton isActive={page.url.pathname === '/search'}>
+					{#snippet child({ props })}
+						<a href="/search" {...props} onclick={() => sidebar.setOpenMobile(false)}>
+							<SearchIcon />
+							<span>Search</span>
 						</a>
 					{/snippet}
 				</Sidebar.MenuButton>
