@@ -16,6 +16,13 @@
         "files": ["src/lib/components/RisoImage.svelte"],
         "createdAt": "2026-10-17T04:14:57.434Z",
         "reason": "src comes from Svelte's {src} shorthand, which the detector reads as missing"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [".impeccable/mocks/decision/**"],
+        "createdAt": "2026-10-17T04:39:44.441Z",
+        "reason": "decision-round sketches show the other directions' faces by design"
       }
     ]
   }
