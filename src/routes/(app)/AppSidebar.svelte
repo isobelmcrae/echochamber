@@ -116,7 +116,7 @@
 							<Sidebar.MenuButton
 								size="lg"
 								isActive={active}
-								class="hover:bg-ink-a/25 active:bg-ink-a/40 data-active:bg-ink-a data-active:text-ink data-active:font-bold data-active:hover:bg-[color-mix(in_oklab,var(--ink-a)_88%,var(--ink))]"
+								class="hover:bg-ink-a/25 active:bg-ink-a/40 data-active:bg-ink-a data-active:text-ink data-active:font-bold data-active:hover:text-ink data-active:hover:bg-[color-mix(in_oklab,var(--ink-a)_88%,var(--ink))]"
 							>
 								{#snippet child({ props })}
 									<a
