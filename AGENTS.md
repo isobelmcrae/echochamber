@@ -17,7 +17,7 @@ bun run test:run       # vitest, single run
 bun run test:run src/lib/server/db.test.ts   # one file
 bun run test:run -t "runs a query"           # one test by name
 bun run auth:migrate   # create/update Better Auth tables in DATABASE_PATH
-bun run seed           # demo accounts alice / bob (password: echochamber) + a shared room
+bun run seed           # demo accounts alice, bob, sam, priya, jules, marco (password: echochamber) + shared rooms
 ```
 
 ## Gates — every change

@@ -13,7 +13,7 @@ binding on install, so you also need python3, make, and a C++ compiler).
 bun install --frozen-lockfile
 cp .env.example .env
 # set BETTER_AUTH_SECRET in .env, e.g. to the output of: openssl rand -base64 32
-bun run seed   # optional: demo users alice / bob (password: echochamber)
+bun run seed   # optional: demo users alice, bob, sam, priya, jules, marco (password: echochamber)
 bun run dev    # http://localhost:5173
 ```
 
