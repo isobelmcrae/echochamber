@@ -1,6 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { deleteLink, editLinkNote, getLink, listLinks, postLink } from "./links.ts";
-import { createRoom, listRooms } from "./rooms.ts";
+import {
+  deleteLink,
+  editLinkNote,
+  getLink,
+  listLinks,
+  listQueue,
+  markSeen,
+  postLink,
+} from "./links.ts";
+import { createRoom, listRooms, markRead } from "./rooms.ts";
 import { addMember, createUser } from "./test-utils.ts";
 
 async function setup() {
@@ -94,5 +102,77 @@ describe("links", () => {
     await deleteLink(bob.id, byBob.id);
     await deleteLink(alice.id, byBob2.id);
     expect((await listLinks(alice.id, roomId)).links).toEqual([]);
+  });
+});
+
+describe("queue", () => {
+  beforeEach(() => vi.useFakeTimers({ toFake: ["Date"] }));
+  afterEach(() => vi.useRealTimers());
+  const tick = () => vi.setSystemTime(Date.now() + 1000);
+  const queueUrls = async (userId: string) =>
+    (await listQueue(userId)).map((g) => [g.room.title, g.links.map((l) => l.url)]);
+
+  it("groups unseen links by room, the room with the newest one first, each oldest first", async () => {
+    const [alice, bob] = [await createUser("alice"), await createUser("bob")];
+    const rooms: string[] = [];
+    for (const title of ["one", "two", "three"]) {
+      const id = await createRoom(alice.id, { title });
+      await addMember(id, bob.id, "member");
+      await markRead(bob.id, id);
+      rooms.push(id);
+    }
+    const [one, two, three] = rooms as [string, string, string];
+    const post = async (roomId: string, path: string) => {
+      tick();
+      await postLink(alice.id, roomId, { url: `https://example.com/${path}` });
+    };
+    await post(one, "1a");
+    await post(three, "3a");
+    await post(two, "2a");
+    await post(three, "3b");
+    await post(one, "1b");
+    await post(three, "3c");
+    await post(two, "2b");
+
+    expect(await queueUrls(bob.id)).toEqual([
+      ["two", ["https://example.com/2a", "https://example.com/2b"]],
+      ["three", ["https://example.com/3a", "https://example.com/3b", "https://example.com/3c"]],
+      ["one", ["https://example.com/1a", "https://example.com/1b"]],
+    ]);
+    // Your own links are never news to you.
+    expect(await queueUrls(alice.id)).toEqual([]);
+  });
+
+  it("drops links once seen, or once their room is read, and counts them out of unread", async () => {
+    const { alice, bob, roomId } = await setup();
+    const other = await createRoom(alice.id, { title: "Other" });
+    await addMember(other, bob.id, "member");
+    await markRead(bob.id, roomId);
+    await markRead(bob.id, other);
+    tick();
+    const a = await postLink(alice.id, roomId, { url: "https://example.com/a" });
+    tick();
+    await postLink(alice.id, roomId, { url: "https://example.com/b" });
+    tick();
+    await postLink(alice.id, other, { url: "https://example.com/c" });
+
+    await markSeen(bob.id, a.id);
+    await markSeen(bob.id, a.id); // idempotent
+    expect(await queueUrls(bob.id)).toEqual([
+      ["Other", ["https://example.com/c"]],
+      ["Reels", ["https://example.com/b"]],
+    ]);
+    expect((await listRooms(bob.id)).find((r) => r.id === roomId)?.unread).toBe(1);
+
+    tick();
+    await markRead(bob.id, roomId);
+    expect(await queueUrls(bob.id)).toEqual([["Other", ["https://example.com/c"]]]);
+  });
+
+  it("only lets members mark a link seen", async () => {
+    const { alice, roomId } = await setup();
+    const stranger = await createUser();
+    const { id } = await postLink(alice.id, roomId, { url: "https://example.com/a" });
+    await expect(markSeen(stranger.id, id)).rejects.toMatchObject({ status: 404 });
   });
 });

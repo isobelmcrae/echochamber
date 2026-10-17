@@ -76,6 +76,12 @@ interface LinkTable {
   edited_at: number | null;
 }
 
+interface LinkSeenTable {
+  user_id: string;
+  link_id: string;
+  seen_at: number;
+}
+
 interface CommentTable {
   id: string;
   link_id: string;
@@ -95,6 +101,7 @@ export interface DB {
   invite_token: InviteTokenTable;
   link_preview: LinkPreviewTable;
   link: LinkTable;
+  link_seen: LinkSeenTable;
   comment: CommentTable;
 }
 

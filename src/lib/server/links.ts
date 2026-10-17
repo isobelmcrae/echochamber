@@ -6,6 +6,7 @@ import { type DB, db } from "./db.ts";
 import { publish, roomChanged } from "./events.ts";
 import { can, requireMember } from "./permissions.ts";
 import { ensurePreview } from "./previews.ts";
+import { listRooms } from "./rooms.ts";
 
 function cleanNote(note: string | null | undefined) {
   return note?.trim() || null;
@@ -49,6 +50,67 @@ function selectLinks() {
       preview(eb),
       commentCount(eb),
     ]);
+}
+
+/**
+ * Links that are new to the user: posted by someone else to one of their rooms
+ * since they last read it, and not viewed one by one since.
+ */
+function selectUnseen(userId: string) {
+  return selectLinks()
+    .innerJoin("room_member as me", (j) =>
+      j.onRef("me.room_id", "=", "link.room_id").on("me.user_id", "=", userId),
+    )
+    .whereRef("link.created_at", ">", "me.last_read_at")
+    .where("link.author_id", "is not", userId)
+    .where(({ not, exists, selectFrom }) =>
+      not(
+        exists(
+          selectFrom("link_seen")
+            .select("link_seen.link_id")
+            .whereRef("link_seen.link_id", "=", "link.id")
+            .where("link_seen.user_id", "=", userId),
+        ),
+      ),
+    );
+}
+
+/**
+ * The user's unseen links grouped by room: the room with the newest one first,
+ * each room's links oldest first so they read in order. Capped to the newest
+ * `limit` links.
+ */
+export async function listQueue(userId: string, { limit = 200 } = {}) {
+  const links = await selectUnseen(userId)
+    .orderBy("link.created_at", "desc")
+    .orderBy("link.id", "desc")
+    .limit(limit)
+    .execute();
+  const rooms = new Map((await listRooms(userId)).map((r) => [r.id, r]));
+  const groups = new Map<string, { room: Room; links: typeof links }>();
+  for (const link of links) {
+    const room = rooms.get(link.room_id);
+    if (!room) continue;
+    const group = groups.get(room.id) ?? { room, links: [] };
+    groups.set(room.id, group);
+    group.links.unshift(link);
+  }
+  return [...groups.values()];
+}
+
+type Room = Awaited<ReturnType<typeof listRooms>>[number];
+
+/** Mark one link seen, dropping it from the queue and its room's unread count. */
+export async function markSeen(userId: string, linkId: string) {
+  await linkForActor(userId, linkId);
+  // Only links that were new to the user, so viewing old ones doesn't notify anyone.
+  if (!(await selectUnseen(userId).where("link.id", "=", linkId).executeTakeFirst())) return;
+  await db
+    .insertInto("link_seen")
+    .values({ user_id: userId, link_id: linkId, seen_at: Date.now() })
+    .onConflict((oc) => oc.doNothing())
+    .execute();
+  publish(`user:${userId}`);
 }
 
 /** Post a link to a room. Returns the new link's id and its (normalized) URL. */

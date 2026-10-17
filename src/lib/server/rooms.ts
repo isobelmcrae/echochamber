@@ -69,7 +69,17 @@ export async function listRooms(userId: string) {
             .select((eb) => eb.fn.countAll<number>().as("n"))
             .whereRef("link.room_id", "=", "room.id")
             .whereRef("link.created_at", ">", "me.last_read_at")
-            .where("link.author_id", "is not", userId),
+            .where("link.author_id", "is not", userId)
+            .where(({ not, exists, selectFrom }) =>
+              not(
+                exists(
+                  selectFrom("link_seen")
+                    .select("link_seen.link_id")
+                    .whereRef("link_seen.link_id", "=", "link.id")
+                    .where("link_seen.user_id", "=", userId),
+                ),
+              ),
+            ),
           eb.lit(0),
         )
         .as("unread"),

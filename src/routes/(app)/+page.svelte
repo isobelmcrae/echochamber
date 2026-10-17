@@ -1,5 +1,12 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+	import LinkCard from '#lib/components/LinkCard.svelte';
+	import LinkModal from '#lib/components/LinkModal.svelte';
+	import { refreshOnChange } from '#lib/refresh-on-change.svelte.ts';
+	import { queue as getQueue } from '#lib/remote/links.remote.ts';
 	import { home } from '#lib/remote/rooms.remote.ts';
+	import { roomName } from '#lib/room-name.ts';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import * as Empty from '#lib/components/ui/empty/index.js';
 	import MessagesSquareIcon from '@lucide/svelte/icons/messages-square';
@@ -8,31 +15,121 @@
 	import PendingInvites from './PendingInvites.svelte';
 	import type { PageProps } from './$types';
 
+	type Group = Awaited<ReturnType<typeof getQueue>>[number];
+	type Item = { link: Group['links'][number]; room: Group['room'] };
+
 	let { data }: PageProps = $props();
 	const newRoom = getNewRoom();
+	refreshOnChange(() => [getQueue()]);
 	const { rooms, invites } = $derived(await home());
+	const queue = $derived(await getQueue());
+
+	// The queue, one room after another, so the viewer flips straight across rooms.
+	const live = $derived(queue.flatMap(({ room, links }) => links.map((link) => ({ link, room }))));
+
+	// Viewing a link marks it seen, which drops it from the live queue. While the viewer is
+	// open, hold the queue it opened on (plus anything new, at the end) so the carousel stays put.
+	let held = $state<Item[] | null>(null);
+	const items = $derived(
+		held ? [...held, ...live.filter((i) => !held!.some((h) => h.link.id === i.link.id))] : live
+	);
+	const groups = $derived(
+		items.reduce<{ room: Item['room']; items: Item[] }[]>((groups, item) => {
+			const last = groups.at(-1);
+			if (last?.room.id === item.room.id) last.items.push(item);
+			else groups.push({ room: item.room, items: [item] });
+			return groups;
+		}, [])
+	);
+
+	const openId = $derived(page.state.linkId);
+	const openIndex = $derived(items.findIndex((i) => i.link.id === openId));
+	const open = $derived(items[openIndex]);
+	$effect(() => {
+		if (!openId) held = null;
+	});
+
+	const linkUrl = (item: Item) => `/rooms/${item.room.id}/links/${item.link.id}`;
+
+	function openLink(item: Item) {
+		held = items;
+		void goto(linkUrl(item), { state: { linkId: item.link.id }, shallow: true });
+	}
+
+	// Flipping through replaces the entry, so Back still returns straight to the queue.
+	function showLink(item: Item | undefined) {
+		if (item) {
+			void goto(linkUrl(item), { state: { linkId: item.link.id }, shallow: true, replace: true });
+		}
+	}
+
+	function removeLink(id: string) {
+		held = held?.filter((i) => i.link.id !== id) ?? null;
+	}
 </script>
+
+{#if openId}
+	<LinkModal
+		linkId={openId}
+		meId={data.me.id}
+		role={open?.room.role ?? 'member'}
+		onPrev={openIndex > 0 ? () => showLink(items[openIndex - 1]) : undefined}
+		onNext={openIndex !== -1 && openIndex < items.length - 1
+			? () => showLink(items[openIndex + 1])
+			: undefined}
+		onClose={() => history.back()}
+		onDeleted={() => {
+			removeLink(openId);
+			history.back();
+		}}
+	/>
+{/if}
 
 <div class="flex flex-1 flex-col gap-6">
 	<PendingInvites {invites} meId={data.me.id} />
 
-	<Empty.Root class="flex-1">
-		<Empty.Header>
-			<Empty.Media variant="icon">
-				<MessagesSquareIcon />
-			</Empty.Media>
-			<Empty.Title>{rooms.length === 0 ? 'No rooms yet' : 'Pick a room'}</Empty.Title>
-			<Empty.Description>
-				{rooms.length === 0
-					? 'Create a room and invite a friend to start sharing links.'
-					: 'Choose a room from the sidebar, or start a new one.'}
-			</Empty.Description>
-		</Empty.Header>
-		<Empty.Content>
-			<Button onclick={newRoom.open}>
-				<PlusIcon data-icon="inline-start" />
-				New room
-			</Button>
-		</Empty.Content>
-	</Empty.Root>
+	{#if groups.length > 0}
+		{#each groups as group, i (`${group.room.id}:${i}`)}
+			<section class="flex flex-col gap-4">
+				<h2 class="truncate text-lg font-semibold">
+					<a href="/rooms/{group.room.id}" class="hover:underline">
+						{roomName(group.room, data.me.id)}
+					</a>
+				</h2>
+				<ul class="flex flex-col gap-4">
+					{#each group.items as item (item.link.id)}
+						<li>
+							<LinkCard
+								link={item.link}
+								meId={data.me.id}
+								role={item.room.role}
+								onOpen={() => openLink(item)}
+								onDeleted={() => removeLink(item.link.id)}
+							/>
+						</li>
+					{/each}
+				</ul>
+			</section>
+		{/each}
+	{:else}
+		<Empty.Root class="flex-1">
+			<Empty.Header>
+				<Empty.Media variant="icon">
+					<MessagesSquareIcon />
+				</Empty.Media>
+				<Empty.Title>{rooms.length === 0 ? 'No rooms yet' : "You're all caught up"}</Empty.Title>
+				<Empty.Description>
+					{rooms.length === 0
+						? 'Create a room and invite a friend to start sharing links.'
+						: 'Choose a room from the sidebar, or start a new one.'}
+				</Empty.Description>
+			</Empty.Header>
+			<Empty.Content>
+				<Button onclick={newRoom.open}>
+					<PlusIcon data-icon="inline-start" />
+					New room
+				</Button>
+			</Empty.Content>
+		</Empty.Root>
+	{/if}
 </div>

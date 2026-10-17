@@ -22,6 +22,13 @@ export const olderLinks = query(
   ({ roomId, cursor }) => links.listLinks(requireUser().id, roomId, { cursor }),
 );
 
+/** The user's unseen links across their rooms, grouped by room. */
+export const queue = query(() => links.listQueue(requireUser().id));
+
+export const markSeen = command(Id, async (linkId) => {
+  await links.markSeen(requireUser().id, linkId);
+});
+
 export const postLink = form(
   v.object({
     roomId: Id,

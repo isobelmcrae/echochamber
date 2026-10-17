@@ -16,7 +16,7 @@
 	import * as InputGroup from '#lib/components/ui/input-group/index.js';
 	import LinkIcon from '@lucide/svelte/icons/link';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
-	import LinkModal from './LinkModal.svelte';
+	import LinkModal from '#lib/components/LinkModal.svelte';
 	import type { PageProps } from './$types';
 
 	type Link = Awaited<ReturnType<typeof feed>>['links'][number];

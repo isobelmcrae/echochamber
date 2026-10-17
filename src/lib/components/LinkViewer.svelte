@@ -2,7 +2,8 @@
 	import { buildCommentTree } from '#lib/comment-tree.ts';
 	import { embedFor } from '#lib/embed.ts';
 	import { refreshOnChange } from '#lib/refresh-on-change.svelte.ts';
-	import { addComment, thread } from '#lib/remote/links.remote.ts';
+	import { untrack } from 'svelte';
+	import { addComment, markSeen, thread } from '#lib/remote/links.remote.ts';
 	import type { Role } from '#lib/server/permissions.ts';
 	import { timeAgo } from '#lib/time.ts';
 	import { Button } from '#lib/components/ui/button/index.js';
@@ -24,6 +25,12 @@
 		$props();
 
 	refreshOnChange(() => [thread(linkId)]);
+	// Viewing a link takes it out of the home queue.
+	$effect(() => {
+		const id = linkId;
+		// Untracked: the command reads state that markSeen's own update changes, which would loop.
+		untrack(() => markSeen(id).catch(() => {}));
+	});
 	const current = $derived(await thread(linkId));
 	const link = $derived(current.link);
 	const tree = $derived(buildCommentTree(current.comments));
