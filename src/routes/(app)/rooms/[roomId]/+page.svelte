@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { untrack } from 'svelte';
 	import { attempt } from '#lib/attempt.ts';
@@ -6,6 +7,7 @@
 	import { feed, olderLinks, postLink } from '#lib/remote/links.remote.ts';
 	import { room as liveRoom, markRead } from '#lib/remote/rooms.remote.ts';
 	import { roomName } from '#lib/room-name.ts';
+	import { isTextEntry } from '#lib/text-entry.ts';
 	import { normalizeUrl } from '#lib/url.ts';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import * as Empty from '#lib/components/ui/empty/index.js';
@@ -13,6 +15,7 @@
 	import * as InputGroup from '#lib/components/ui/input-group/index.js';
 	import LinkIcon from '@lucide/svelte/icons/link';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
+	import LinkModal from './LinkModal.svelte';
 	import type { PageProps } from './$types';
 
 	type Link = Awaited<ReturnType<typeof feed>>['links'][number];
@@ -43,16 +46,10 @@
 	// The note field opens up once there's a link to annotate.
 	const drafting = $derived(!!postLink.fields.url.value());
 
-	// A link pasted anywhere outside a text field lands in the share bar.
+	// A link pasted outside a text field (and the viewer) lands in the share bar.
 	let urlInput = $state<HTMLInputElement | null>(null);
 	function pasteLink(e: ClipboardEvent) {
-		const t = e.target;
-		if (
-			t instanceof HTMLInputElement ||
-			t instanceof HTMLTextAreaElement ||
-			(t instanceof HTMLElement && t.isContentEditable)
-		)
-			return;
+		if (openId || isTextEntry(e.target)) return;
 		const text = e.clipboardData?.getData('text/plain').trim();
 		if (!text || !normalizeUrl(text)) return;
 		e.preventDefault();
@@ -68,9 +65,49 @@
 			olderCursor = next.nextCursor;
 		});
 	}
+
+	// The viewer opens over the feed with shallow routing: the URL is the link's own page, so
+	// reloading or sharing it lands there, and Back closes the viewer.
+	const openId = $derived(page.state.linkId);
+	const openIndex = $derived(links.findIndex((l) => l.id === openId));
+	const linkUrl = (id: string) => `/rooms/${roomId}/links/${id}`;
+
+	function openLink(id: string) {
+		void goto(linkUrl(id), { state: { linkId: id }, shallow: true });
+	}
+
+	// Flipping through replaces the entry, so Back still returns straight to the feed.
+	function showLink(id: string | undefined) {
+		if (id) void goto(linkUrl(id), { state: { linkId: id }, shallow: true, replace: true });
+	}
+
+	async function showNext() {
+		if (openIndex === links.length - 1) await loadOlder();
+		showLink(links[openIndex + 1]?.id);
+	}
+
+	function removeLink(id: string) {
+		older = older.filter((l) => l.id !== id);
+	}
 </script>
 
 <svelte:document onpaste={pasteLink} />
+
+{#if openId}
+	<LinkModal
+		{roomId}
+		linkId={openId}
+		meId={data.me.id}
+		role={room.role}
+		onPrev={openIndex > 0 ? () => showLink(links[openIndex - 1]?.id) : undefined}
+		onNext={openIndex !== -1 && (openIndex < links.length - 1 || cursor) ? showNext : undefined}
+		onClose={() => history.back()}
+		onDeleted={() => {
+			removeLink(openId);
+			history.back();
+		}}
+	/>
+{/if}
 
 <div class="flex flex-1 flex-col gap-6">
 	<div class="flex items-center justify-between gap-4">
@@ -99,7 +136,8 @@
 						{link}
 						meId={data.me.id}
 						role={room.role}
-						onDeleted={() => (older = older.filter((l) => l.id !== link.id))}
+						onOpen={() => openLink(link.id)}
+						onDeleted={() => removeLink(link.id)}
 					/>
 				</li>
 			{/each}

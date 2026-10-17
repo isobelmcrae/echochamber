@@ -1,14 +1,12 @@
 <script lang="ts">
-	import { attempt } from '#lib/attempt.ts';
-	import { deleteLink, editLinkNote, type feed } from '#lib/remote/links.remote.ts';
+	import type { feed } from '#lib/remote/links.remote.ts';
 	import type { Role } from '#lib/server/permissions.ts';
 	import { timeAgo } from '#lib/time.ts';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import * as Card from '#lib/components/ui/card/index.js';
-	import * as DropdownMenu from '#lib/components/ui/dropdown-menu/index.js';
-	import { Textarea } from '#lib/components/ui/textarea/index.js';
+	import LinkMenu from './LinkMenu.svelte';
+	import LinkNote from './LinkNote.svelte';
 	import UserAvatar from './UserAvatar.svelte';
-	import EllipsisIcon from '@lucide/svelte/icons/ellipsis';
 	import MessageCircleIcon from '@lucide/svelte/icons/message-circle';
 
 	type Link = Awaited<ReturnType<typeof feed>>['links'][number];
@@ -17,41 +15,35 @@
 		link,
 		meId,
 		role,
+		onOpen,
 		onDeleted
-	}: { link: Link; meId: string; role: Role; onDeleted?: () => void } = $props();
+	}: {
+		link: Link;
+		meId: string;
+		role: Role;
+		/** Show the link in place; without it, clicks go to the link's own page. */
+		onOpen?: () => void;
+		onDeleted?: () => void;
+	} = $props();
 
+	const href = $derived(`/rooms/${link.room_id}/links/${link.id}`);
 	const host = $derived(new URL(link.url).hostname.replace(/^www\./, ''));
 	const preview = $derived(link.preview?.status === 'ok' ? link.preview : null);
-	const isAuthor = $derived(link.author?.id === meId);
-	const canDelete = $derived(isAuthor || role === 'admin');
 
 	// Preview images are hotlinked, and some CDNs expire them; hide broken ones.
 	let imageFailed = $state(false);
 	let editing = $state(false);
-	let draft = $state('');
 
-	function startEditing() {
-		draft = link.note ?? '';
-		editing = true;
-	}
-
-	async function save() {
-		if (await attempt(() => editLinkNote({ linkId: link.id, note: draft }))) editing = false;
-	}
-
-	async function remove() {
-		if (!confirm('Delete this link and its comments?')) return;
-		if (await attempt(() => deleteLink(link.id))) onDeleted?.();
+	// Plain clicks open the viewer in place; modified clicks (new tab, etc.) follow the href.
+	function open(e: MouseEvent) {
+		if (!onOpen || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+		e.preventDefault();
+		onOpen();
 	}
 </script>
 
 <Card.Root class="gap-3 overflow-hidden py-0">
-	<a
-		href={link.url}
-		target="_blank"
-		rel="noopener noreferrer"
-		class="hover:bg-muted/50 flex gap-4 p-4 transition-colors"
-	>
+	<a {href} onclick={open} class="hover:bg-muted/50 flex gap-4 p-4 transition-colors">
 		{#if preview?.image_url && !imageFailed}
 			<img
 				src={preview.image_url}
@@ -74,15 +66,7 @@
 	</a>
 
 	<div class="space-y-2 px-4 pb-3">
-		{#if editing}
-			<Textarea bind:value={draft} placeholder="Add a note" rows={2} />
-			<div class="flex justify-end gap-2">
-				<Button variant="ghost" size="sm" onclick={() => (editing = false)}>Cancel</Button>
-				<Button size="sm" onclick={save}>Save</Button>
-			</div>
-		{:else if link.note}
-			<p class="text-sm whitespace-pre-wrap">{link.note}</p>
-		{/if}
+		<LinkNote linkId={link.id} note={link.note} bind:editing />
 
 		<div class="text-muted-foreground flex items-center justify-between gap-2 text-xs">
 			<div class="flex min-w-0 items-center gap-1.5">
@@ -93,29 +77,11 @@
 				>
 			</div>
 			<div class="flex shrink-0 items-center gap-1">
-				<Button variant="ghost" size="sm" href="/rooms/{link.room_id}/links/{link.id}">
+				<Button variant="ghost" size="sm" {href} onclick={open}>
 					<MessageCircleIcon />
 					{link.comment_count}
 				</Button>
-				{#if isAuthor || canDelete}
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger>
-							{#snippet child({ props })}
-								<Button {...props} variant="ghost" size="icon-sm" aria-label="Link actions">
-									<EllipsisIcon />
-								</Button>
-							{/snippet}
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content align="end">
-							{#if isAuthor}
-								<DropdownMenu.Item onclick={startEditing}>Edit note</DropdownMenu.Item>
-							{/if}
-							{#if canDelete}
-								<DropdownMenu.Item variant="destructive" onclick={remove}>Delete</DropdownMenu.Item>
-							{/if}
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
-				{/if}
+				<LinkMenu {link} {meId} {role} onEdit={() => (editing = true)} {onDeleted} />
 			</div>
 		</div>
 	</div>

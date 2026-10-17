@@ -11,7 +11,10 @@ declare global {
       user?: typeof auth.$Infer.Session.user;
     }
     // interface PageData {}
-    // interface PageState {}
+    interface PageState {
+      /** The link open in the room's viewer, shown over the feed via shallow routing. */
+      linkId?: string;
+    }
     // interface Platform {}
   }
 }
