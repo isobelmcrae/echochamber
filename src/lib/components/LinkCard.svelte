@@ -85,13 +85,13 @@
 		{/if}
 
 		<div class="text-muted-foreground flex items-center justify-between gap-2 text-xs">
-			<span class="flex min-w-0 items-center gap-1.5">
+			<div class="flex min-w-0 items-center gap-1.5">
 				<UserAvatar size="sm" name={link.author?.name ?? '?'} image={link.author?.image} />
 				<span class="truncate">{link.author?.name ?? 'Deleted user'} · {timeAgo(link.created_at)}{link.edited_at
 					? ' · edited'
 					: ''}</span
 				>
-			</span>
+			</div>
 			<div class="flex shrink-0 items-center gap-1">
 				<Button variant="ghost" size="sm" href="/rooms/{link.room_id}/links/{link.id}">
 					<MessageCircleIcon />

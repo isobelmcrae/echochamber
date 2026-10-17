@@ -26,3 +26,6 @@ vite.config.ts.timestamp-*
 *.db
 *.db-shm
 *.db-wal
+
+# Playwright MCP snapshots and screenshots
+/.playwright-mcp/

@@ -41,11 +41,11 @@
 		{#if node.deleted}
 			<p class="text-muted-foreground text-sm italic">[deleted]</p>
 		{:else}
-			<p class="text-muted-foreground flex items-center gap-1.5 text-xs">
+			<div class="text-muted-foreground flex items-center gap-1.5 text-xs">
 				<UserAvatar size="sm" name={node.author?.name ?? '?'} image={node.author?.image} />
 				<span class="text-foreground font-medium">{node.author?.name ?? 'Deleted user'}</span>
 				· {timeAgo(node.created_at)}{node.edited_at ? ' · edited' : ''}
-			</p>
+			</div>
 			{#if editing}
 				<Textarea bind:value={draft} rows={2} />
 				<div class="flex justify-end gap-2">
