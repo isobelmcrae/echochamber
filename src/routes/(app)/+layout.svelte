@@ -34,10 +34,15 @@
 	const inks = $derived(new Map(rooms.map((room) => [room.id, room.ink])));
 
 	// The feeds open out: wide for a gallery's columns, a little wider than the reading
-	// column for the list. Every other page keeps the reading column.
-	const FEEDS = new Set(['/(app)', '/(app)/rooms/[roomId]']);
-	const feed = $derived(FEEDS.has(page.route.id ?? ''));
-	const width = $derived(!feed ? 'max-w-2xl' : view === 'gallery' ? 'max-w-6xl' : 'max-w-3xl');
+	// column for the list. A link's page is as wide as its modal, for the same side-by-side
+	// layout. Every other page keeps the reading column.
+	const feedWidth = $derived(view === 'gallery' ? 'max-w-6xl' : 'max-w-3xl');
+	const widths: Record<string, string> = $derived({
+		'/(app)': feedWidth,
+		'/(app)/rooms/[roomId]': feedWidth,
+		'/(app)/rooms/[roomId]/links/[linkId]': 'max-w-6xl'
+	});
+	const width = $derived(widths[page.route.id ?? ''] ?? 'max-w-2xl');
 </script>
 
 <Sidebar.Provider>

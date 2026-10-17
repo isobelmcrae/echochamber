@@ -46,7 +46,7 @@
 	let editing = $state(false);
 </script>
 
-<!-- Side by side when there's room (the modal), stacked otherwise (narrow screens, the link's page). -->
+<!-- Side by side when there's room, stacked on narrow screens. -->
 <div class="@container size-full" {...inkVars(inks.of(link.room_id))}>
 	<div class="flex h-full flex-col overflow-y-auto @3xl:flex-row @3xl:overflow-hidden">
 		<div

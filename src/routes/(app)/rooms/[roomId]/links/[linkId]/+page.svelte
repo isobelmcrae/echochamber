@@ -13,12 +13,14 @@
 	const room = $derived(await getRoom(page.params.roomId!));
 </script>
 
-<div class="space-y-6">
+<!-- A container so the box takes a fixed height exactly when LinkViewer goes side by side. -->
+<div class="@container space-y-6">
 	<Button variant="ghost" size="sm" class="-ml-2" href="/rooms/{room.id}">
 		← {roomName(room, data.me.id)}
 	</Button>
 
-	<div class="overflow-hidden rounded-xl border">
+	<!-- Fills the viewport below the back button: the layout's py-6 plus the button and gap. -->
+	<div class="overflow-hidden rounded-xl border @3xl:h-[calc(100svh-6.5rem)]">
 		<LinkViewer
 			linkId={page.params.linkId!}
 			meId={data.me.id}
