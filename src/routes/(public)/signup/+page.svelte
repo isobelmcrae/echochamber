@@ -7,6 +7,7 @@
 	import * as Card from '#lib/components/ui/card/index.js';
 	import * as Field from '#lib/components/ui/field/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
+	import PasswordInput from '#lib/components/PasswordInput.svelte';
 	import OAuthButtons from '../OAuthButtons.svelte';
 	import type { PageProps } from './$types';
 
@@ -17,11 +18,18 @@
 	let username = $state('');
 	let email = $state('');
 	let password = $state('');
+	let confirm = $state('');
+	// Flag a mismatch once the confirmation stops being a prefix of the password.
+	const mismatch = $derived(confirm !== '' && !password.startsWith(confirm));
 	let error = $state<string | null>(null);
 	let pending = $state(false);
 
 	async function submit(event: SubmitEvent) {
 		event.preventDefault();
+		if (confirm !== password) {
+			error = "Passwords don't match";
+			return;
+		}
 		pending = true;
 		const result = await authClient.signUp.email({
 			name,
@@ -70,14 +78,24 @@
 				</Field.Field>
 				<Field.Field>
 					<Field.Label for="password">Password</Field.Label>
-					<Input
+					<PasswordInput
 						id="password"
-						type="password"
 						bind:value={password}
 						autocomplete="new-password"
 						minlength={8}
 						required
 					/>
+				</Field.Field>
+				<Field.Field>
+					<Field.Label for="confirm-password">Confirm password</Field.Label>
+					<PasswordInput
+						id="confirm-password"
+						bind:value={confirm}
+						autocomplete="new-password"
+						aria-invalid={mismatch}
+						required
+					/>
+					{#if mismatch}<Field.Error>Passwords don't match</Field.Error>{/if}
 				</Field.Field>
 				{#if error}<Field.Error>{error}</Field.Error>{/if}
 				<Button type="submit" disabled={pending}>Create account</Button>

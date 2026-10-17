@@ -7,6 +7,7 @@
 	import * as Card from '#lib/components/ui/card/index.js';
 	import * as Field from '#lib/components/ui/field/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
+	import PasswordInput from '#lib/components/PasswordInput.svelte';
 	import OAuthButtons from '../OAuthButtons.svelte';
 	import type { PageProps } from './$types';
 
@@ -56,9 +57,8 @@
 				</Field.Field>
 				<Field.Field>
 					<Field.Label for="password">Password</Field.Label>
-					<Input
+					<PasswordInput
 						id="password"
-						type="password"
 						bind:value={password}
 						autocomplete="current-password"
 						required
