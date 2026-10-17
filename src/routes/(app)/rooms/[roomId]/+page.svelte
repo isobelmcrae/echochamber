@@ -6,6 +6,7 @@
 	import { feed, olderLinks, postLink } from '#lib/remote/links.remote.ts';
 	import { room as liveRoom, markRead } from '#lib/remote/rooms.remote.ts';
 	import { roomName } from '#lib/room-name.ts';
+	import { normalizeUrl } from '#lib/url.ts';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import * as Empty from '#lib/components/ui/empty/index.js';
 	import * as Field from '#lib/components/ui/field/index.js';
@@ -42,6 +43,23 @@
 	// The note field opens up once there's a link to annotate.
 	const drafting = $derived(!!postLink.fields.url.value());
 
+	// A link pasted anywhere outside a text field lands in the share bar.
+	let urlInput = $state<HTMLInputElement | null>(null);
+	function pasteLink(e: ClipboardEvent) {
+		const t = e.target;
+		if (
+			t instanceof HTMLInputElement ||
+			t instanceof HTMLTextAreaElement ||
+			(t instanceof HTMLElement && t.isContentEditable)
+		)
+			return;
+		const text = e.clipboardData?.getData('text/plain').trim();
+		if (!text || !normalizeUrl(text)) return;
+		e.preventDefault();
+		postLink.fields.url.set(text);
+		urlInput?.focus();
+	}
+
 	async function loadOlder() {
 		if (!cursor) return;
 		await attempt(async () => {
@@ -51,6 +69,8 @@
 		});
 	}
 </script>
+
+<svelte:document onpaste={pasteLink} />
 
 <div class="flex flex-1 flex-col gap-6">
 	<div class="flex items-center justify-between gap-4">
@@ -106,6 +126,7 @@
 					</InputGroup.Addon>
 				{/if}
 				<InputGroup.Input
+					bind:ref={urlInput}
 					{...postLink.fields.url.as('text')}
 					placeholder="Paste something…"
 					autocomplete="off"
