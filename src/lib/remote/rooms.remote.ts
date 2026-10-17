@@ -3,30 +3,24 @@ import { invalid, isHttpError, redirect } from "@sveltejs/kit";
 import * as v from "valibot";
 import { Id } from "#lib/schemas.ts";
 import { listMyInvites } from "#lib/server/invites.ts";
-import { live } from "#lib/server/live.ts";
 import { ROLES } from "#lib/server/permissions.ts";
 import * as rooms from "#lib/server/rooms.ts";
 import { requireUser } from "#lib/server/session.ts";
 
-// Mutations publish change events (src/lib/server/events.ts), and every read
-// here is a live query, so nothing needs refreshing by hand. Forms submit with
-// `form.submit().updates()` to skip the default refresh-everything round trip.
+// Mutations publish change events (src/lib/server/events.ts), which the
+// `changes` stream turns into refreshes of these reads (`refreshOnChange`).
+// Forms submit with `form.submit().updates()` to skip the default
+// refresh-everything round trip.
 
 const Title = v.optional(v.pipe(v.string(), v.trim(), v.maxLength(100)));
 
 /** The signed-in user's rooms and pending invites. */
-export const home = query.live(() => {
+export const home = query(async () => {
   const me = requireUser();
-  return live([`user:${me.id}`], async () => ({
-    rooms: await rooms.listRooms(me.id),
-    invites: await listMyInvites(me.id),
-  }));
+  return { rooms: await rooms.listRooms(me.id), invites: await listMyInvites(me.id) };
 });
 
-export const room = query.live(Id, (roomId) => {
-  const me = requireUser();
-  return live([`room:${roomId}`], () => rooms.getRoom(roomId, me.id));
-});
+export const room = query(Id, (roomId) => rooms.getRoom(roomId, requireUser().id));
 
 export const markRead = command(Id, async (roomId) => {
   await rooms.markRead(requireUser().id, roomId);

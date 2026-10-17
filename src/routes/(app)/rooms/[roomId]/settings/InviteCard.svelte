@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { attempt } from '#lib/attempt.ts';
+	import { refreshOnChange } from '#lib/refresh-on-change.svelte.ts';
 	import {
 		cancelInvite,
 		createInviteLink,
@@ -15,6 +16,7 @@
 	import { toast } from 'svelte-sonner';
 
 	let { roomId }: { roomId: string } = $props();
+	refreshOnChange(() => [roomInvites(roomId)]);
 	const invites = $derived(await roomInvites(roomId));
 
 	const selectClass =

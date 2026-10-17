@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { refreshOnChange } from '#lib/refresh-on-change.svelte.ts';
 	import { home } from '#lib/remote/rooms.remote.ts';
 	import * as Sidebar from '#lib/components/ui/sidebar/index.js';
 	import AppSidebar from './AppSidebar.svelte';
@@ -10,6 +11,8 @@
 	// Context must be set before the first `await`.
 	let newRoomOpen = $state(false);
 	setNewRoom({ open: () => (newRoomOpen = true) });
+	// Also keeps the home page's copy fresh: it's the same query.
+	refreshOnChange(() => [home()]);
 
 	const { rooms, invites } = $derived(await home());
 </script>

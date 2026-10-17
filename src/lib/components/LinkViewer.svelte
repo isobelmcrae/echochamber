@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
 	import { buildCommentTree } from '#lib/comment-tree.ts';
 	import { embedFor } from '#lib/embed.ts';
-	import { addComment, roomChanges, thread } from '#lib/remote/links.remote.ts';
+	import { refreshOnChange } from '#lib/refresh-on-change.svelte.ts';
+	import { addComment, thread } from '#lib/remote/links.remote.ts';
 	import type { Role } from '#lib/server/permissions.ts';
 	import { timeAgo } from '#lib/time.ts';
 	import { Button } from '#lib/components/ui/button/index.js';
@@ -16,23 +16,14 @@
 	import ExternalLinkIcon from '@lucide/svelte/icons/external-link';
 
 	let {
-		roomId,
 		linkId,
 		meId,
 		role,
 		onDeleted
-	}: { roomId: string; linkId: string; meId: string; role: Role; onDeleted?: () => void } =
+	}: { linkId: string; meId: string; role: Role; onDeleted?: () => void } =
 		$props();
 
-	// `thread` isn't live (see `roomChanges`), so reload it whenever the room changes.
-	// Read without awaiting: the first token only marks where changes start.
-	const revision = $derived(roomChanges(roomId).current);
-	let loaded: string | undefined;
-	$effect(() => {
-		if (loaded && loaded !== revision) untrack(() => thread(linkId).refresh());
-		loaded = revision;
-	});
-
+	refreshOnChange(() => [thread(linkId)]);
 	const current = $derived(await thread(linkId));
 	const link = $derived(current.link);
 	const tree = $derived(buildCommentTree(current.comments));

@@ -4,12 +4,13 @@
 	import { attempt } from '#lib/attempt.ts';
 	import {
 		deleteRoom,
-		room as liveRoom,
+		room as getRoom,
 		kickMember,
 		leaveRoom,
 		renameRoom,
 		setRole
 	} from '#lib/remote/rooms.remote.ts';
+	import { refreshOnChange } from '#lib/refresh-on-change.svelte.ts';
 	import { roomName } from '#lib/room-name.ts';
 	import { Badge } from '#lib/components/ui/badge/index.js';
 	import { Button } from '#lib/components/ui/button/index.js';
@@ -22,7 +23,8 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-	const room = $derived(await liveRoom(page.params.roomId!));
+	refreshOnChange(() => [getRoom(page.params.roomId!)]);
+	const room = $derived(await getRoom(page.params.roomId!));
 	const isAdmin = $derived(room.role === 'admin');
 
 	async function leave() {

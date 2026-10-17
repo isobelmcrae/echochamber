@@ -5,7 +5,8 @@
 	import { attempt } from '#lib/attempt.ts';
 	import LinkCard from '#lib/components/LinkCard.svelte';
 	import { feed, olderLinks, postLink } from '#lib/remote/links.remote.ts';
-	import { room as liveRoom, markRead } from '#lib/remote/rooms.remote.ts';
+	import { refreshOnChange } from '#lib/refresh-on-change.svelte.ts';
+	import { room as getRoom, markRead } from '#lib/remote/rooms.remote.ts';
 	import { roomName } from '#lib/room-name.ts';
 	import { isTextEntry } from '#lib/text-entry.ts';
 	import { normalizeUrl } from '#lib/url.ts';
@@ -22,7 +23,8 @@
 
 	let { data }: PageProps = $props();
 	const roomId = $derived(page.params.roomId!);
-	const room = $derived(await liveRoom(roomId));
+	refreshOnChange(() => [getRoom(roomId), feed(roomId)]);
+	const room = $derived(await getRoom(roomId));
 	const latest = $derived(await feed(roomId));
 
 	// Opening the room, and each new link while it's open, clears its unread badge.
@@ -95,7 +97,6 @@
 
 {#if openId}
 	<LinkModal
-		{roomId}
 		linkId={openId}
 		meId={data.me.id}
 		role={room.role}

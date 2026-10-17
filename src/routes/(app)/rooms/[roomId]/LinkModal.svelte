@@ -12,7 +12,6 @@
 	import XIcon from '@lucide/svelte/icons/x';
 
 	let {
-		roomId,
 		linkId,
 		meId,
 		role,
@@ -21,7 +20,6 @@
 		onClose,
 		onDeleted
 	}: {
-		roomId: string;
 		linkId: string;
 		meId: string;
 		role: Role;
@@ -55,7 +53,7 @@
 			<DialogPrimitive.Title class="sr-only">Shared link</DialogPrimitive.Title>
 			<div class="bg-background size-full overflow-hidden md:rounded-xl">
 				<svelte:boundary>
-					<LinkViewer {roomId} {linkId} {meId} {role} {onDeleted} />
+					<LinkViewer {linkId} {meId} {role} {onDeleted} />
 					{#snippet pending()}
 						<div class="flex size-full items-center justify-center">
 							<LoaderCircleIcon class="text-muted-foreground size-6 animate-spin" />

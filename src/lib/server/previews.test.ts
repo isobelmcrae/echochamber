@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { changes } from "./events.ts";
+import { userChanges } from "./events.ts";
 import { getLink, postLink } from "./links.ts";
 import { ensurePreview } from "./previews.ts";
 import { createRoom } from "./rooms.ts";
@@ -23,9 +23,9 @@ describe("ensurePreview", () => {
       image_url: "https://img.test/x.jpg",
       site_name: "Tube",
     });
-    const { alice, roomId, id } = await linkWith("https://video.test/1");
+    const { alice, id } = await linkWith("https://video.test/1");
     const abort = new AbortController();
-    const roomEvents = changes([`room:${roomId}`], abort.signal)[Symbol.asyncIterator]();
+    const roomEvents = userChanges(alice.id, abort.signal)[Symbol.asyncIterator]();
     await roomEvents.next();
     const notified = roomEvents.next();
 

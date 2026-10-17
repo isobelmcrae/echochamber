@@ -2,7 +2,6 @@ import { command, form, query } from "$app/server";
 import { invalid, isHttpError } from "@sveltejs/kit";
 import * as v from "valibot";
 import * as invites from "#lib/server/invites.ts";
-import { live } from "#lib/server/live.ts";
 import { requireUser } from "#lib/server/session.ts";
 import { Id } from "#lib/schemas.ts";
 
@@ -15,12 +14,12 @@ export const declineInvite = command(Id, async (roomId) => {
 });
 
 /** Pending username invites and live invite links, for the room's admins. */
-export const roomInvites = query.live(Id, (roomId) => {
+export const roomInvites = query(Id, async (roomId) => {
   const me = requireUser();
-  return live([`room:${roomId}`], async () => ({
+  return {
     pending: await invites.listRoomInvites(me.id, roomId),
     links: await invites.listInviteLinks(me.id, roomId),
-  }));
+  };
 });
 
 export const inviteUser = form(
