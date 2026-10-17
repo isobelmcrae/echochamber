@@ -19,7 +19,7 @@
 	<title>echochamber</title>
 </svelte:head>
 
-<ModeWatcher />
+<ModeWatcher defaultMode="dark" />
 <Toaster />
 
 {@render children()}
