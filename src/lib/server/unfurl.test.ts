@@ -1,12 +1,14 @@
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   allowsFraming,
   fetchText,
   isPublicAddress,
   oembedEndpoint,
   parseMeta,
+  Unreachable,
+  unfurl,
   usefulPreview,
 } from "./unfurl.ts";
 
@@ -159,6 +161,9 @@ describe("fetchText", () => {
         res.writeHead(200, { "content-type": "text/html" }).end("x".repeat(600_000));
       else if (req.url === "/image") res.writeHead(200, { "content-type": "image/png" }).end("png");
       else if (req.url === "/slow") setTimeout(() => res.end("late"), 2000);
+      else if (req.url === "/gone") res.writeHead(410).end();
+      else if (req.url === "/forbidden") res.writeHead(403).end();
+      else if (req.url === "/to-missing") res.writeHead(302, { location: "/missing" }).end();
       else res.writeHead(404).end();
     });
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -188,6 +193,36 @@ describe("fetchText", () => {
       url: `${origin}/locked`,
       frameable: false,
     });
+  });
+
+  it("tells pages that don't resolve from other failures", async () => {
+    const opts = { allow: localOnly };
+    for (const path of ["/missing", "/gone", "/to-missing"]) {
+      await expect(fetchText(`${origin}${path}`, opts)).rejects.toBeInstanceOf(Unreachable);
+    }
+    // Nothing listens on port 1.
+    await expect(fetchText("http://127.0.0.1:1/", opts)).rejects.toBeInstanceOf(Unreachable);
+    // Blocked bots, slow pages, files and refused addresses may still open in a browser.
+    for (const [path, options] of [
+      ["/forbidden", opts],
+      ["/slow", { ...opts, timeoutMs: 200 }],
+      ["/image", opts],
+      ["/page", {}],
+    ] as const) {
+      await expect(fetchText(`${origin}${path}`, options)).rejects.not.toBeInstanceOf(Unreachable);
+    }
+  });
+
+  it("unfurls a page that doesn't resolve as broken", async () => {
+    vi.restoreAllMocks(); // test-setup stubs unfurl
+    await expect(unfurl(`${origin}/missing`, { allow: localOnly })).resolves.toEqual({
+      preview: null,
+      page: "broken",
+    });
+    await expect(unfurl(`${origin}/locked`, { allow: localOnly })).resolves.toMatchObject({
+      page: "unframeable",
+    });
+    await expect(unfurl(`${origin}/forbidden`, { allow: localOnly })).rejects.toThrow(/403/);
   });
 
   it("caps size and time, and skips non-text responses", async () => {

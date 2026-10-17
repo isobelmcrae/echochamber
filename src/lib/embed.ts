@@ -3,7 +3,11 @@ export type Embed =
   | { kind: "frame"; src: string; shape: "video" | "vertical" | "audio" | "page" }
   | { kind: "image"; src: string }
   | { kind: "video"; src: string }
-  | { kind: "none" };
+  | { kind: "none" }
+  | { kind: "broken" };
+
+/** What fetching a link's page found: whether it may be framed, or that it doesn't resolve. */
+export type PageStatus = "frameable" | "unframeable" | "broken";
 
 type Provider = { host: RegExp; embed: (url: URL) => Embed | null };
 
@@ -100,10 +104,11 @@ const VIDEO = /\.(mp4|webm|mov)$/i;
 
 /**
  * Pick how to show a link: a provider's player, the file itself, or the page in
- * a frame. `frameable` is what the page's headers said when its preview was
- * fetched; unknown pages get a frame.
+ * a frame. `page` is what fetching its preview found; unknown pages get a frame.
  */
-export function embedFor(href: string, { frameable }: { frameable?: boolean } = {}): Embed {
+export function embedFor(href: string, { page }: { page?: PageStatus | null } = {}): Embed {
+  // A frame or player would only show the browser's (or the player's) error.
+  if (page === "broken") return { kind: "broken" };
   const url = new URL(href);
   const provider = PROVIDERS.find((p) => p.host.test(url.hostname));
   const embed = provider?.embed(url);
@@ -111,6 +116,6 @@ export function embedFor(href: string, { frameable }: { frameable?: boolean } = 
   if (IMAGE.test(url.pathname)) return { kind: "image", src: href };
   if (VIDEO.test(url.pathname)) return { kind: "video", src: href };
   // The app is served over https, which blocks http frames as mixed content.
-  if (url.protocol !== "https:" || frameable === false) return { kind: "none" };
+  if (url.protocol !== "https:" || page === "unframeable") return { kind: "none" };
   return { kind: "frame", src: href, shape: "page" };
 }

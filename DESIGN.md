@@ -143,7 +143,7 @@ components:
 
 Every room is a small zine printed in its own two risograph inks, and the home queue is the newest issue. The stock is cool, bright paper with riso-black type; colour enters only as ink, laid down flat and at full strength, never tinted, never as a gradient wash. A reader should know which room a link came from by its ink before reading a word.
 
-The world is dense and quiet. Rows sit on hairline rules, not cards. Hierarchy comes from weight and ink rather than from many sizes: heavy lowercase-feeling Bricolage Grotesque for names and titles, a small regular size for everything else. The signature is the print itself: link previews are rendered as two-ink halftone duotones in the room's pair, a pixel off register, and they register to full colour on hover and in the viewer. Live arrivals print in once with a two-pass registration slide, then sit still.
+The world is dense and quiet. Rows sit on hairline rules, not cards. Hierarchy comes from weight and ink rather than from many sizes: heavy lowercase-feeling Bricolage Grotesque for names and titles, a small regular size for everything else. The signature is the print itself: link previews are rendered as two-ink halftone duotones in the room's pair, a pixel off register; they rest in full colour and print in ink on hover. Live arrivals print in once with a two-pass registration slide, then sit still.
 
 It is never louder than the content friends share, and never childish: no thick black boxes, no hard offset box shadows, no sticker-like chrome. Light and dark both ship; dark mode is near-black stock where the light ink becomes the type colour.
 
@@ -153,7 +153,7 @@ It is never louder than the content friends share, and never childish: no thick 
 - Ink always at full strength; one pair per room, one room's pair per row.
 - Weight and ink rank content, not size.
 - Hairline rules and 4px corners; flat surfaces.
-- Halftone duotone previews that register to full colour on hover.
+- Full-colour previews that print as halftone duotones on hover.
 
 ## Colors
 
@@ -288,6 +288,15 @@ A sharer's note in 13px medium, run through a highlighter of the room's light in
 
 The signature. An 80px preview printed in the room's pair: a light-ink tone plate (screen blend), a dark-ink shadow plate screened into a 3px dot grid, and a solid dark-ink key plate for type and outlines, both dark plates 1px off register. Hovering the row fades the plates (0.35s, cubic-bezier(0.16, 1, 0.3, 1)) to show the full-colour image. Live arrivals print in over 520ms: they fade up 6px while the dark plates slide from 6px off register to rest. Reduced motion skips the animation.
 
+### Gallery View
+
+An alternative to the ruled rows on the queue and room pages, chosen with a two-segment toggle (list / gallery; the pressed segment fills with the light ink) and kept per browser in the `view` cookie so the server renders it first time. The reading column opens to 1152px for it; the room composer stays at 672px, centred.
+
+- **Wall:** a pinboard (`.masonry` plus the `masonry` attachment) of tiles, as many 13.5rem-plus columns as fit, never more than four, 28px gutters. Tiles keep feed order and drop into whichever column ends highest.
+- **Tile:** the riso print leads at full column width in its own shape (7rem to 26rem tall), then the row's text in the same two sizes: site, ink spot and title (three lines), description (two), note, byline. No border, no card.
+- **No picture:** a 16:10 block of the light ink with the site name in 20px extra-bold, overprinted by the dark ink a hair off register.
+- **Queue wall:** one wall in queue order; each tile is scoped to its own room's pair and carries a **room tag** (its name on a small light-ink badge) before the site.
+
 ### Avatar Fallback
 
 Initials in bold white on the surrounding room's dark ink, so a row stays in one pair.
@@ -300,7 +309,7 @@ Initials in bold white on the surrounding room's dark ink, so a row stays in one
 - **Do** keep room inks at full strength and put riso-black type on every light-ink fill.
 - **Do** rank within a row by weight and ink across exactly two sizes (16px and 13px).
 - **Do** separate feed rows with hairline rules and keep corners at 4px or less.
-- **Do** print previews through the riso thumbnail and let hover register them to full colour.
+- **Do** show previews through the riso thumbnail: full colour at rest, printed in the room's inks on hover.
 - **Do** ship every surface in both paper and night stock.
 
 ### Don't:

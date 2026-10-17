@@ -226,7 +226,7 @@
 
   /*
    * A preview printed as a two-ink riso: the light ink carries the tone, the dark ink prints the
-   * shadows through a halftone screen (solid at full tone), a pixel off register. Hover registers it to full colour.
+   * shadows through a halftone screen (solid at full tone), a pixel off register. It rests in full colour and prints in ink on hover.
    */
   .riso {
     position: relative;
@@ -245,6 +245,7 @@
     position: absolute;
     inset: 0;
     isolation: isolate;
+    opacity: 0;
     transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .riso-plate > img {
@@ -277,10 +278,57 @@
   .riso-plate[data-plate="k"] > img {
     filter: grayscale(1) brightness(2) contrast(8);
   }
+  /* In a gallery the print keeps the picture's own shape, up to a tall portrait. */
+  .riso-natural > img {
+    position: relative;
+    display: block;
+    height: auto;
+    min-height: 7rem;
+    max-height: 26rem;
+  }
+
+  /* A tile with no picture: the site's name, black over a second plate of the dark ink a hair off register. */
+  .riso-blank > span {
+    text-shadow: 0.05em 0.04em 0 var(--ink-b);
+  }
+
+  /* A room's name as a small badge of its light ink, for walls that mix rooms. */
+  .room-tag {
+    flex: none;
+    max-width: 60%;
+    overflow: hidden;
+    border-radius: calc(var(--radius) * 0.6);
+    background: var(--ink-a);
+    padding: 0.05em 0.4em 0.1em;
+    color: var(--ink);
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /*
+   * A pinboard of link tiles: as many columns as fit at 13.5rem, at most four, since each tile
+   * carries a title, description and byline under its picture. `masonry` packs them once it runs.
+   */
+  .masonry {
+    --gap: 1.75rem;
+    display: grid;
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(max(13.5rem, (100% - 3 * var(--gap)) / 4), 1fr)
+    );
+    gap: var(--gap);
+    align-items: start;
+  }
+  .masonry[data-packed] {
+    grid-auto-rows: 1px;
+    row-gap: 0;
+  }
+
   @media (hover: hover) {
     :where(a, button):hover .riso-plate,
     .riso:hover .riso-plate {
-      opacity: 0;
+      opacity: 1;
     }
   }
 }

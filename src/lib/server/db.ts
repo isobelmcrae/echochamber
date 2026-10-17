@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import { type Generated, Kysely, ParseJSONResultsPlugin, SqliteDialect } from "kysely";
 import * as env from "$app/env/private";
+import type { PageStatus } from "#lib/embed.ts";
 import type { Role } from "./permissions.ts";
 
 // Timestamps are integer epoch milliseconds; ids are random UUIDs.
@@ -60,8 +61,8 @@ interface LinkPreviewTable {
   description: string | null;
   image_url: string | null;
   site_name: string | null;
-  /** Whether the page lets other sites frame it; null when unknown. */
-  frameable: 0 | 1 | null;
+  /** Whether the page lets other sites frame it, or doesn't resolve; null when unknown. */
+  page_status: PageStatus | null;
   fetched_at: number | null;
 }
 

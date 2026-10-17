@@ -82,19 +82,29 @@ describe("embedFor", () => {
   });
 
   it("doesn't frame pages known to refuse it, but still plays their media", () => {
-    expect(embedFor("https://github.com/sveltejs/kit", { frameable: false })).toEqual({
+    expect(embedFor("https://github.com/sveltejs/kit", { page: "unframeable" })).toEqual({
       kind: "none",
     });
-    expect(embedFor("https://example.com/cat.png", { frameable: false })).toMatchObject({
+    expect(embedFor("https://example.com/cat.png", { page: "unframeable" })).toMatchObject({
       kind: "image",
     });
-    expect(embedFor("https://vimeo.com/76979871", { frameable: false })).toMatchObject({
+    expect(embedFor("https://vimeo.com/76979871", { page: "unframeable" })).toMatchObject({
       kind: "frame",
       shape: "video",
     });
-    expect(embedFor("https://example.com/article", { frameable: true })).toMatchObject({
+    expect(embedFor("https://example.com/article", { page: "frameable" })).toMatchObject({
       shape: "page",
     });
+  });
+
+  it("shows nothing for links that don't resolve, whatever they point at", () => {
+    for (const url of [
+      "https://example.com/article",
+      "https://example.com/cat.png",
+      "https://vimeo.com/76979871",
+    ]) {
+      expect(embedFor(url, { page: "broken" })).toEqual({ kind: "broken" });
+    }
   });
 
   // An https page can't frame plain http (mixed content), so there's nothing to show.

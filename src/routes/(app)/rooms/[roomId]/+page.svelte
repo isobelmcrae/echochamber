@@ -7,6 +7,10 @@
 	import { getRoomInks } from '#lib/room-inks.ts';
 	import { printIn } from '#lib/print-in.ts';
 	import LinkCard from '#lib/components/LinkCard.svelte';
+	import LinkTile from '#lib/components/LinkTile.svelte';
+	import ViewToggle from '#lib/components/ViewToggle.svelte';
+	import { masonry } from '#lib/masonry.ts';
+	import { getView } from '#lib/view.ts';
 	import { feed, olderLinks, postLink } from '#lib/remote/links.remote.ts';
 	import { refreshOnChange } from '#lib/refresh-on-change.svelte.ts';
 	import { room as getRoom, markRead } from '#lib/remote/rooms.remote.ts';
@@ -27,6 +31,7 @@
 
 	let { data }: PageProps = $props();
 	const inks = getRoomInks();
+	const view = getView();
 	const roomId = $derived(page.params.roomId!);
 	refreshOnChange(() => [getRoom(roomId), feed(roomId)]);
 	const room = $derived(await getRoom(roomId));
@@ -121,6 +126,9 @@
 			<span class="room-band min-w-0"><span class="truncate">{roomName(room, data.me.id)}</span></span>
 			<span class="room-rule" aria-hidden="true"></span>
 		</h1>
+		{#if links.length > 0}
+			<ViewToggle />
+		{/if}
 		<Button variant="ghost" size="sm" href="/rooms/{room.id}/settings">
 			<SettingsIcon data-icon="inline-start" />
 			{room.role === 'admin' ? 'Manage' : 'Members'}
@@ -137,6 +145,20 @@
 				<Empty.Description>Paste the first link below.</Empty.Description>
 			</Empty.Header>
 		</Empty.Root>
+	{:else if view.current === 'gallery'}
+		<ul class="masonry" {@attach masonry}>
+			{#each links as link (link.id)}
+				<li in:printIn>
+					<LinkTile
+						{link}
+						meId={data.me.id}
+						role={room.role}
+						onOpen={() => openLink(link.id)}
+						onDeleted={() => removeLink(link.id)}
+					/>
+				</li>
+			{/each}
+		</ul>
 	{:else}
 		<ul class="flex flex-col">
 			{#each links as link (link.id)}
@@ -151,18 +173,18 @@
 				</li>
 			{/each}
 		</ul>
-		{#if cursor}
-			<div class="flex justify-center">
-				<Button variant="outline" onclick={loadOlder}>Load older links</Button>
-			</div>
-		{/if}
+	{/if}
+	{#if links.length > 0 && cursor}
+		<div class="flex justify-center">
+			<Button variant="outline" onclick={loadOlder}>Load older links</Button>
+		</div>
 	{/if}
 
 	<form
 		{...postLink.enhance(async (form) => {
 			if (await form.submit().updates()) form.element.reset();
 		})}
-		class="sticky bottom-4 mt-auto flex flex-col gap-1"
+		class="sticky bottom-4 mt-auto flex w-full max-w-2xl flex-col gap-1 self-center"
 	>
 		<input {...postLink.fields.roomId.as('hidden', roomId)} />
 		<div class="bg-background rounded-md shadow-[0_8px_24px_-6px_rgb(0_0_0/0.18)]">

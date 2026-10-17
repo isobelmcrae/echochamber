@@ -24,7 +24,7 @@ const preview = (eb: ExpressionBuilder<DB, "link">) =>
   jsonObjectFrom(
     eb
       .selectFrom("link_preview")
-      .select(["status", "title", "description", "image_url", "site_name", "frameable"])
+      .select(["status", "title", "description", "image_url", "site_name", "page_status"])
       .whereRef("link_preview.url", "=", "link.url"),
   ).as("preview");
 

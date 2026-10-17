@@ -1,13 +1,9 @@
 <script lang="ts">
 	import type { feed } from '#lib/remote/links.remote.ts';
 	import type { Role } from '#lib/server/permissions.ts';
-	import { timeAgo } from '#lib/time.ts';
-	import { Button } from '#lib/components/ui/button/index.js';
-	import LinkMenu from './LinkMenu.svelte';
+	import LinkByline from './LinkByline.svelte';
 	import LinkNote from './LinkNote.svelte';
 	import RisoImage from './RisoImage.svelte';
-	import UserAvatar from './UserAvatar.svelte';
-	import MessageCircleIcon from '@lucide/svelte/icons/message-circle';
 
 	type Link = Awaited<ReturnType<typeof feed>>['links'][number];
 
@@ -51,7 +47,7 @@
 			<RisoImage
 				src={preview.image_url}
 				onerror={() => (imageFailed = true)}
-				class="size-20 shrink-0 rounded-sm"
+				class="size-24 shrink-0 rounded-sm"
 			/>
 		{/if}
 		<div class="min-w-0 flex-1 space-y-1">
@@ -78,28 +74,6 @@
 	<div class="mt-2 space-y-2">
 		<LinkNote linkId={link.id} note={link.note} bind:editing />
 
-		<div class="text-muted-foreground flex items-center justify-between gap-2 text-[0.8125rem]">
-			<div class="flex min-w-0 items-center gap-1.5">
-				<UserAvatar size="sm" name={link.author?.name ?? '?'} image={link.author?.image} />
-				<span class="truncate"
-					><span class="text-foreground font-semibold">{link.author?.name ?? 'Deleted user'}</span>
-					· {timeAgo(link.created_at)}{link.edited_at ? ' · edited' : ''}</span
-				>
-			</div>
-			<div class="flex shrink-0 items-center gap-1">
-				<Button
-					variant="ghost"
-					size="sm"
-					{href}
-					onclick={open}
-					aria-label="{link.comment_count} {link.comment_count === 1 ? 'comment' : 'comments'}"
-					class={(link.comment_count ?? 0) > 0 ? 'text-ink-text border-current' : ''}
-				>
-					<MessageCircleIcon />
-					{link.comment_count}
-				</Button>
-				<LinkMenu {link} {meId} {role} onEdit={() => (editing = true)} {onDeleted} />
-			</div>
-		</div>
+		<LinkByline {link} {meId} {role} {href} onopen={open} onEdit={() => (editing = true)} {onDeleted} />
 	</div>
 </article>

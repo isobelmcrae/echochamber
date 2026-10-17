@@ -3,6 +3,10 @@
 	import { page } from '$app/state';
 	import LinkCard from '#lib/components/LinkCard.svelte';
 	import LinkModal from '#lib/components/LinkModal.svelte';
+	import LinkTile from '#lib/components/LinkTile.svelte';
+	import ViewToggle from '#lib/components/ViewToggle.svelte';
+	import { masonry } from '#lib/masonry.ts';
+	import { getView } from '#lib/view.ts';
 	import { inkVars } from '#lib/ink.ts';
 	import { getRoomInks } from '#lib/room-inks.ts';
 	import { printIn } from '#lib/print-in.ts';
@@ -25,6 +29,7 @@
 	let { data }: PageProps = $props();
 	const newRoom = getNewRoom();
 	const inks = getRoomInks();
+	const view = getView();
 	refreshOnChange(() => [getQueue()]);
 	const { rooms, invites } = $derived(await home());
 	const queue = $derived(await getQueue());
@@ -93,7 +98,33 @@
 <div class="flex flex-1 flex-col gap-8">
 	<PendingInvites {invites} meId={data.me.id} />
 
-	{#if groups.length > 0}
+	{#if items.length > 0}
+		<div class="-mb-4 flex items-center justify-between gap-3">
+			<p class="text-muted-foreground text-[0.8125rem]">
+				<span class="text-foreground font-semibold tabular-nums">{live.length}</span> unseen
+			</p>
+			<ViewToggle />
+		</div>
+	{/if}
+
+	{#if items.length > 0 && view.current === 'gallery'}
+		<!-- One wall in queue order, each tile printed in its own room's pair and tagged with its name. -->
+		<ul class="masonry" {@attach masonry}>
+			{#each items as item (item.link.id)}
+				<li in:printIn {...inkVars(inks.of(item.room.id))}>
+					<LinkTile
+						link={item.link}
+						meId={data.me.id}
+						role={item.room.role}
+						room={roomName(item.room, data.me.id)}
+						unread={live.some((i) => i.link.id === item.link.id)}
+						onOpen={() => openLink(item)}
+						onDeleted={() => removeLink(item.link.id)}
+					/>
+				</li>
+			{/each}
+		</ul>
+	{:else if groups.length > 0}
 		{#each groups as group, i (`${group.room.id}:${i}`)}
 			<section class="flex flex-col" {...inkVars(inks.of(group.room.id))}>
 				<h2 class="flex items-center gap-2.5 text-[1.625rem]">

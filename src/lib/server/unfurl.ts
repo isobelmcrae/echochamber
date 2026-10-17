@@ -3,6 +3,7 @@ import http from "node:http";
 import https from "node:https";
 import type { IncomingHttpHeaders } from "node:http";
 import { BlockList, isIP } from "node:net";
+import type { PageStatus } from "#lib/embed.ts";
 
 // Fetches link previews without letting users point the server at internal
 // machines (SSRF): every connection, including each redirect hop, may only
@@ -58,6 +59,16 @@ type FetchOptions = {
 };
 
 const TEXT_TYPES = /^(text\/html|application\/xhtml\+xml|application\/json)/i;
+
+/**
+ * The page doesn't resolve for anyone: no such host, nothing listening, a bad
+ * certificate, or the server says it's not there. Other failures (timeouts,
+ * blocked bots, refused addresses) may still open in a browser.
+ */
+export class Unreachable extends Error {}
+
+const UNREACHABLE_CODES = /^(ENOTFOUND|ECONNREFUSED|EHOSTUNREACH|ENETUNREACH)$|CERT|SSL|TLS/;
+const UNREACHABLE_STATUSES = new Set([404, 410]);
 
 /**
  * Whether a page's response lets another site show it in a frame. A CSP
@@ -150,7 +161,9 @@ function request(url: URL, allow: (ip: string) => boolean, deadline: number, max
           }
           if (status >= 400) {
             res.resume();
-            return reject(new Error(`HTTP ${status}`));
+            return reject(
+              new (UNREACHABLE_STATUSES.has(status) ? Unreachable : Error)(`HTTP ${status}`),
+            );
           }
           if (!TEXT_TYPES.test(res.headers["content-type"] ?? "")) {
             res.resume();
@@ -176,7 +189,9 @@ function request(url: URL, allow: (ip: string) => boolean, deadline: number, max
         },
       );
       req.on("timeout", () => req.destroy(new Error("Request timed out")));
-      req.on("error", reject);
+      req.on("error", (err: NodeJS.ErrnoException) =>
+        reject(UNREACHABLE_CODES.test(err.code ?? "") ? new Unreachable(err.message) : err),
+      );
     },
   );
 }
@@ -255,13 +270,14 @@ export function oembedEndpoint(url: string) {
 }
 
 /**
- * Best-effort preview for a URL (null when nothing useful was found), and
- * whether the page may be framed (null when only oEmbed was asked, whose
- * sites the viewer shows through their own players). Throws on network errors.
+ * Best-effort preview for a URL (null when nothing useful was found), and what
+ * its page is: frameable, not, or broken (null when only oEmbed was asked, whose
+ * sites the viewer shows through their own players). Throws on other failures.
  */
 export async function unfurl(
   url: string,
-): Promise<{ preview: Preview | null; frameable: boolean | null }> {
+  options: FetchOptions = {},
+): Promise<{ preview: Preview | null; page: PageStatus | null }> {
   const endpoint = oembedEndpoint(url);
   if (endpoint) {
     try {
@@ -273,15 +289,19 @@ export async function unfurl(
         image_url: httpUrl(str(data.thumbnail_url)),
         site_name: clean(str(data.provider_name), 100),
       };
-      return { preview, frameable: null };
+      return { preview, page: null };
     } catch {
       // Fall back to the page itself.
     }
   }
-  const page = await fetchText(url);
+  const page = await fetchText(url, options).catch((err: unknown) => {
+    if (err instanceof Unreachable) return null;
+    throw err;
+  });
+  if (!page) return { preview: null, page: "broken" };
   return {
     preview: usefulPreview(parseMeta(page.body, page.url), page.url),
-    frameable: page.frameable,
+    page: page.frameable ? "frameable" : "unframeable",
   };
 }
 

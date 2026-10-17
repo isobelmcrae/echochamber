@@ -50,7 +50,11 @@
 				<img src={image} alt="" referrerpolicy="no-referrer" class="max-h-60 rounded-md object-contain" />
 			{/if}
 			<p class="font-medium break-words">{title}</p>
-			<p class="text-sm text-white/70">This page can't be shown here.</p>
+			<p class="text-sm text-white/70">
+				{embed.kind === 'broken'
+					? "This link didn't load when we checked it. It may have moved or been taken down."
+					: "This page can't be shown here."}
+			</p>
 			<Button variant="secondary" href={url} target="_blank" rel="noopener noreferrer">
 				<ExternalLinkIcon data-icon="inline-start" />
 				Open in new tab
