@@ -165,10 +165,15 @@
 	>
 		<input {...postLink.fields.roomId.as('hidden', roomId)} />
 		<div class="bg-background rounded-md shadow-[0_8px_24px_-6px_rgb(0_0_0/0.18)]">
-			<InputGroup.Root>
+			<!-- A slip printed in the room's ink: present at the foot of the feed, never louder than it. -->
+			<InputGroup.Root
+				class="border-ink-text dark:border-ink-a/60 has-[[data-slot=input-group-control]:focus-visible]:border-ink-text has-[[data-slot=input-group-control]:focus-visible]:ring-ink-a/60 h-12 border-2 bg-background shadow-none dark:bg-background"
+			>
 				{#if !drafting}
-					<InputGroup.Addon>
-						<LinkIcon />
+					<InputGroup.Addon class="pl-1.5">
+						<span class="bg-ink-a text-ink grid size-8 place-items-center rounded-sm">
+							<LinkIcon class="size-4" />
+						</span>
 					</InputGroup.Addon>
 				{/if}
 				<InputGroup.Input
@@ -178,7 +183,13 @@
 					autocomplete="off"
 					inputmode="url"
 					aria-label="Link"
+					class="text-base font-medium md:text-base"
 				/>
+				{#if !drafting}
+					<InputGroup.Addon align="inline-end" class="hidden md:flex">
+						<InputGroup.Text class="text-muted-foreground text-xs">or paste anywhere</InputGroup.Text>
+					</InputGroup.Addon>
+				{/if}
 				{#if drafting}
 					<InputGroup.Textarea
 						{...postLink.fields.note.as('text')}
