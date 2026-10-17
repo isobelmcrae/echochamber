@@ -11,6 +11,7 @@
 	import * as DropdownMenu from '#lib/components/ui/dropdown-menu/index.js';
 	import * as Sidebar from '#lib/components/ui/sidebar/index.js';
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
+	import HouseIcon from '@lucide/svelte/icons/house';
 	import InfoIcon from '@lucide/svelte/icons/info';
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import MailIcon from '@lucide/svelte/icons/mail';
@@ -55,6 +56,18 @@
 <Sidebar.Root>
 	<Sidebar.Header class="gap-3 p-4">
 		<a href="/" class="wordmark w-fit rounded-sm text-[1.75rem]">echochamber</a>
+		<Sidebar.Menu>
+			<Sidebar.MenuItem>
+				<Sidebar.MenuButton isActive={page.url.pathname === '/'}>
+					{#snippet child({ props })}
+						<a href="/" {...props} onclick={() => sidebar.setOpenMobile(false)}>
+							<HouseIcon />
+							<span>Home</span>
+						</a>
+					{/snippet}
+				</Sidebar.MenuButton>
+			</Sidebar.MenuItem>
+		</Sidebar.Menu>
 		<Button onclick={onNewRoom}>
 			<PlusIcon data-icon="inline-start" />
 			New room
@@ -66,7 +79,7 @@
 			<Sidebar.Group>
 				<Sidebar.Menu>
 					<Sidebar.MenuItem>
-						<Sidebar.MenuButton isActive={page.url.pathname === '/'}>
+						<Sidebar.MenuButton>
 							{#snippet child({ props })}
 								<a href="/" {...props} onclick={() => sidebar.setOpenMobile(false)}>
 									<MailIcon />
