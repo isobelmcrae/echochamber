@@ -21,6 +21,9 @@ interface UserTable {
 interface RoomTable {
   id: string;
   title: string | null;
+  /** The ink pair every member sees the room printed in, as lowercase `#rrggbb`. */
+  ink_a: string;
+  ink_b: string;
   created_by: string | null;
   created_at: number;
   updated_at: number;
@@ -106,7 +109,7 @@ export interface DB {
   comment: CommentTable;
 }
 
-const JSON_COLUMN = /^\$\[\d+\]\."(members|author|preview)"$/;
+const JSON_COLUMN = /^\$\[\d+\]\."(members|author|preview|ink)"$/;
 
 const sqlite = new Database(env.DATABASE_PATH);
 sqlite.pragma("journal_mode = WAL");

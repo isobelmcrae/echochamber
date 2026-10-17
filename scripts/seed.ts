@@ -10,6 +10,7 @@ import { betterAuth } from "better-auth";
 import { getMigrations } from "better-auth/db/migration";
 import { username } from "better-auth/plugins/username";
 import { Kysely, SqliteDialect } from "kysely";
+import { INKS } from "../src/lib/ink.ts";
 import type { DB } from "../src/lib/server/db.ts";
 import { migrate } from "../src/lib/server/migrate.ts";
 
@@ -123,7 +124,7 @@ for (const person of PEOPLE) {
 }
 const id = (username: Username) => ids.get(username)!;
 
-for (const room of ROOMS) {
+for (const [n, room] of ROOMS.entries()) {
   const [owner, ...others] = room.members.map(id) as [string, ...string[]];
   // A room is already seeded when its creator has one with the same title (or the same 1:1 partner).
   const existing = await db
@@ -157,6 +158,8 @@ for (const room of ROOMS) {
       .values({
         id: roomId,
         title: room.title,
+        ink_a: INKS[n % INKS.length]!.a,
+        ink_b: INKS[n % INKS.length]!.b,
         created_by: owner,
         created_at: joined,
         updated_at: now,

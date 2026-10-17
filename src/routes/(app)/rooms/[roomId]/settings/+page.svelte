@@ -2,13 +2,16 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { attempt } from '#lib/attempt.ts';
+	import { INKS, inkVars, sameInk, type Ink } from '#lib/ink.ts';
 	import {
 		deleteRoom,
 		room as getRoom,
+		home,
 		kickMember,
 		leaveRoom,
 		renameRoom,
-		setRole
+		setRole,
+		setRoomInk
 	} from '#lib/remote/rooms.remote.ts';
 	import { refreshOnChange } from '#lib/refresh-on-change.svelte.ts';
 	import { roomName } from '#lib/room-name.ts';
@@ -27,6 +30,20 @@
 	const room = $derived(await getRoom(page.params.roomId!));
 	const isAdmin = $derived(room.role === 'admin');
 
+	// Optimistic, so the whole app (sidebar included) reprints the moment a swatch is picked.
+	function recolour({ a, b }: Ink) {
+		const ink = { a, b };
+		return attempt(() =>
+			setRoomInk({ roomId: room.id, ink }).updates(
+				getRoom(room.id).withOverride((r) => ({ ...r, ink })),
+				home().withOverride((h) => ({
+					...h,
+					rooms: h.rooms.map((r) => (r.id === room.id ? { ...r, ink } : r))
+				}))
+			)
+		);
+	}
+
 	async function leave() {
 		if (!confirm('Leave this room?')) return;
 		if (await attempt(() => leaveRoom(room.id))) await goto('/');
@@ -38,7 +55,7 @@
 	}
 </script>
 
-<div class="space-y-6">
+<div class="space-y-6" {...inkVars(room.ink)}>
 	<div class="flex items-center justify-between gap-4">
 		<h1 class="truncate text-2xl font-semibold">{roomName(room, data.me.id)}</h1>
 		<Button variant="ghost" size="sm" href="/rooms/{room.id}">Back to room</Button>
@@ -61,6 +78,39 @@
 					/>
 					<Button type="submit" variant="secondary">Save</Button>
 				</form>
+			</Card.Content>
+		</Card.Root>
+	{/if}
+
+	{#if isAdmin}
+		<Card.Root>
+			<Card.Header>
+				<Card.Title>Colour</Card.Title>
+				<Card.Description>The ink pair everyone in the room sees it printed in.</Card.Description>
+			</Card.Header>
+			<Card.Content>
+				<fieldset class="flex flex-wrap gap-3">
+					<legend class="sr-only">Room colour</legend>
+					{#each INKS as ink (ink.label)}
+						<label
+							{...inkVars(ink)}
+							title={ink.label}
+							class="has-focus-visible:ring-ring has-checked:ring-foreground grid size-11 cursor-pointer grid-rows-[2fr_1fr] overflow-hidden rounded-md ring-offset-2 ring-offset-(--card) has-checked:ring-2 has-focus-visible:ring-2"
+						>
+							<input
+								type="radio"
+								name="ink"
+								value={ink.a}
+								checked={sameInk(room.ink, ink)}
+								onchange={() => recolour(ink)}
+								aria-label={ink.label}
+								class="sr-only"
+							/>
+							<span class="bg-ink-a"></span>
+							<span class="bg-ink-b"></span>
+						</label>
+					{/each}
+				</fieldset>
 			</Card.Content>
 		</Card.Root>
 	{/if}

@@ -30,7 +30,15 @@ describe("requireMember", () => {
     const now = Date.now();
     await db
       .insertInto("room")
-      .values({ id, title: null, created_by: userId, created_at: now, updated_at: now })
+      .values({
+        id,
+        title: null,
+        ink_a: "#ff48b0",
+        ink_b: "#0078bf",
+        created_by: userId,
+        created_at: now,
+        updated_at: now,
+      })
       .execute();
     await db
       .insertInto("room_member")

@@ -1,9 +1,18 @@
 import { error } from "@sveltejs/kit";
+import { type ExpressionBuilder, sql } from "kysely";
 import { jsonArrayFrom } from "kysely/helpers/sqlite";
-import { db } from "./db.ts";
+import { freshInk, type Ink } from "#lib/ink.ts";
+import { type DB, db } from "./db.ts";
 import { publish, roomChanged } from "./events.ts";
 import { findByUsername } from "./invites.ts";
 import { requireMember, type Role } from "./permissions.ts";
+
+/** The room's two ink columns as one `Ink`. */
+function ink(eb: ExpressionBuilder<DB, "room">) {
+  return sql<Ink>`json_object('a', ${eb.ref("room.ink_a")}, 'b', ${eb.ref("room.ink_b")})`.as(
+    "ink",
+  );
+}
 
 function cleanTitle(title: string | null | undefined) {
   return title?.trim() || null;
@@ -19,11 +28,20 @@ export async function createRoom(
   const id = crypto.randomUUID();
   const now = Date.now();
   await db.transaction().execute(async (tx) => {
+    const used = await tx
+      .selectFrom("room")
+      .innerJoin("room_member", "room_member.room_id", "room.id")
+      .select(["room.ink_a as a", "room.ink_b as b"])
+      .where("room_member.user_id", "=", actorId)
+      .execute();
+    const fresh = freshInk(used);
     await tx
       .insertInto("room")
       .values({
         id,
         title: cleanTitle(title),
+        ink_a: fresh.a,
+        ink_b: fresh.b,
         created_by: actorId,
         created_at: now,
         updated_at: now,
@@ -60,6 +78,7 @@ export async function listRooms(userId: string) {
     .select((eb) => [
       "room.id",
       "room.title",
+      ink(eb),
       "room.updated_at",
       "me.role",
       "me.joined_at",
@@ -116,6 +135,7 @@ export async function getRoom(roomId: string, userId: string) {
     .select((eb) => [
       "room.id",
       "room.title",
+      ink(eb),
       jsonArrayFrom(
         eb
           .selectFrom("room_member")
@@ -137,6 +157,12 @@ export async function renameRoom(actorId: string, roomId: string, title: string 
     .set({ title: cleanTitle(title), updated_at: Date.now() })
     .where("id", "=", roomId)
     .execute();
+  await roomChanged(roomId);
+}
+
+export async function setRoomInk(actorId: string, roomId: string, { a, b }: Ink) {
+  await requireMember(roomId, actorId, "room.update");
+  await db.updateTable("room").set({ ink_a: a, ink_b: b }).where("id", "=", roomId).execute();
   await roomChanged(roomId);
 }
 

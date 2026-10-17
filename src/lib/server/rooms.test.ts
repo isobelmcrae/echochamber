@@ -9,6 +9,7 @@ import {
   markRead,
   renameRoom,
   setRole,
+  setRoomInk,
 } from "./rooms.ts";
 import { acceptInvite } from "./invites.ts";
 import { postLink } from "./links.ts";
@@ -50,6 +51,36 @@ describe("rooms", () => {
     await expect(renameRoom(bob.id, roomId, "mine now")).rejects.toMatchObject({ status: 403 });
     await renameRoom(alice.id, roomId, "ours");
     expect((await getRoom(roomId, bob.id)).title).toBe("ours");
+  });
+
+  it("gives each new room an ink its creator's other rooms aren't using", async () => {
+    const alice = await createUser();
+    const first = await createRoom(alice.id, {});
+    const second = await createRoom(alice.id, {});
+    const inks = (await listRooms(alice.id)).map((r) => r.ink.a);
+    expect(new Set(inks).size).toBe(2);
+    expect((await getRoom(first, alice.id)).ink).not.toEqual((await getRoom(second, alice.id)).ink);
+  });
+
+  it("shows every member a room in the same ink", async () => {
+    const [alice, bob] = [await createUser(), await createUser()];
+    await createRoom(bob.id, {});
+    const roomId = await createRoom(alice.id, {});
+    await addMember(roomId, bob.id, "member");
+    const inkFor = async (userId: string) =>
+      (await listRooms(userId)).find((r) => r.id === roomId)!.ink;
+    expect(await inkFor(bob.id)).toEqual(await inkFor(alice.id));
+  });
+
+  it("lets admins recolour a room for everyone, but not members", async () => {
+    const [alice, bob] = [await createUser(), await createUser()];
+    const roomId = await createRoom(alice.id, {});
+    await addMember(roomId, bob.id, "member");
+    const ink = { a: "#ffe800", b: "#914e72" };
+    await expect(setRoomInk(bob.id, roomId, ink)).rejects.toMatchObject({ status: 403 });
+    await setRoomInk(alice.id, roomId, ink);
+    expect((await getRoom(roomId, bob.id)).ink).toEqual(ink);
+    expect((await listRooms(bob.id))[0]!.ink).toEqual(ink);
   });
 
   it("lets admins kick members, who then lose access", async () => {

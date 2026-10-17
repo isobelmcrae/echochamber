@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { assignInks } from '#lib/ink.ts';
+	import { INKS } from '#lib/ink.ts';
 	import { setRoomInks } from '#lib/room-inks.ts';
 	import { refreshOnChange } from '#lib/refresh-on-change.svelte.ts';
 	import { home } from '#lib/remote/rooms.remote.ts';
@@ -15,7 +15,7 @@
 	// Context must be set before the first `await`.
 	let newRoomOpen = $state(false);
 	setNewRoom({ open: () => (newRoomOpen = true) });
-	setRoomInks({ of: (roomId) => inks.get(roomId) ?? 0 });
+	setRoomInks({ of: (roomId) => inks.get(roomId) ?? INKS[0] });
 	// Seeded from the cookie; toggling writes it back for the next server render.
 	let view = $derived<View>(data.view);
 	setView({
@@ -31,7 +31,7 @@
 	refreshOnChange(() => [home()]);
 
 	const { rooms, invites } = $derived(await home());
-	const inks = $derived(assignInks(rooms));
+	const inks = $derived(new Map(rooms.map((room) => [room.id, room.ink])));
 
 	// The feeds open out: wide for a gallery's columns, a little wider than the reading
 	// column for the list. Every other page keeps the reading column.

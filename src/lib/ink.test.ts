@@ -1,36 +1,35 @@
 import { describe, expect, it } from "vitest";
-import { INKS, assignInks, inkVars } from "./ink.ts";
+import { INKS, freshInk, inkVars } from "./ink.ts";
 
-const room = (id: string, joined_at: number) => ({ id, joined_at });
+const pair = ({ a, b }: { a: string; b: string }) => ({ a, b });
 
-describe("assignInks", () => {
-  it("gives up to one room per pair a pair of its own", () => {
-    const rooms = INKS.map((_, i) => room(`r${i}`, i));
-    expect(new Set(assignInks(rooms).values()).size).toBe(INKS.length);
+describe("freshInk", () => {
+  it("starts at the first pair", () => {
+    expect(freshInk([])).toEqual(pair(INKS[0]));
   });
 
-  it("keeps a room's ink when the list is reordered", () => {
-    const rooms = [room("a", 3), room("b", 1), room("c", 2)];
-    expect(assignInks(rooms)).toEqual(assignInks([...rooms].reverse()));
+  it("picks a pair none of the rooms use while there is one", () => {
+    expect(freshInk(INKS.slice(0, 3).map(pair))).toEqual(pair(INKS[3]));
+    expect(freshInk([pair(INKS[1])])).toEqual(pair(INKS[0]));
   });
 
-  it("keeps existing rooms' inks when a newer room is joined", () => {
-    const rooms = [room("a", 1), room("b", 2)];
-    const before = assignInks(rooms);
-    const after = assignInks([...rooms, room("c", 3)]);
-    expect(after.get("a")).toBe(before.get("a"));
-    expect(after.get("b")).toBe(before.get("b"));
+  it("picks the least used pair once every pair is taken", () => {
+    const used = [...INKS, ...INKS.filter((_, i) => i !== 2)].map(pair);
+    expect(freshInk(used)).toEqual(pair(INKS[2]));
   });
 
-  it("cycles back through the pairs past the last one", () => {
-    const rooms = Array.from({ length: INKS.length + 1 }, (_, i) => room(`r${i}`, i));
-    expect(assignInks(rooms).get(`r${INKS.length}`)).toBe(assignInks(rooms).get("r0"));
+  it("tells pairs that share a dark ink apart", () => {
+    // Sunflower and bright red are both printed with teal.
+    expect(INKS[1].b).toBe(INKS[5].b);
+    expect(freshInk(INKS.filter((_, i) => i !== 5).map(pair))).toEqual(pair(INKS[5]));
   });
 });
 
 describe("inkVars", () => {
   it("prints an element in the given pair", () => {
-    const { a, b } = INKS[2];
-    expect(inkVars(2)).toEqual({ "data-ink": "", style: `--ink-a:${a};--ink-b:${b}` });
+    expect(inkVars({ a: "#00a95c", b: "#3d5588" })).toEqual({
+      "data-ink": "",
+      style: "--ink-a:#00a95c;--ink-b:#3d5588",
+    });
   });
 });

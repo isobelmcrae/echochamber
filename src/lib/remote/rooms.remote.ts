@@ -47,6 +47,18 @@ export const renameRoom = form(
   },
 );
 
+const Hex = v.pipe(v.string(), v.toLowerCase(), v.regex(/^#[0-9a-f]{6}$/, "Not a #rrggbb colour"));
+
+export const setRoomInk = command(
+  v.object({ roomId: Id, ink: v.object({ a: Hex, b: Hex }) }),
+  async ({ roomId, ink }) => {
+    await rooms.setRoomInk(requireUser().id, roomId, ink);
+    // Sent back with the response, so the picker's optimistic overrides settle in one trip.
+    void room(roomId).refresh();
+    void home().refresh();
+  },
+);
+
 const Member = v.object({ roomId: Id, userId: v.string() });
 
 export const kickMember = command(Member, async ({ roomId, userId }) => {
