@@ -7,6 +7,10 @@
 	import * as Card from '#lib/components/ui/card/index.js';
 	import * as Field from '#lib/components/ui/field/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
+	import OAuthButtons from '../OAuthButtons.svelte';
+	import type { PageProps } from './$types';
+
+	let { data }: PageProps = $props();
 
 	const next = $derived(safeNext(page.url.searchParams.get('next')));
 	let name = $state('');
@@ -44,6 +48,7 @@
 	<Card.Content>
 		<form onsubmit={submit}>
 			<Field.Group>
+				<OAuthButtons providers={data.oauthProviders} {next} />
 				<Field.Field>
 					<Field.Label for="name">Name</Field.Label>
 					<Input id="name" bind:value={name} autocomplete="name" required />

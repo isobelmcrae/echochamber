@@ -20,6 +20,30 @@ x-zenith:
     BETTER_AUTH_URL:
       alias: ZENITH_PUBLIC_URL
       services: [web]
+    GITHUB_CLIENT_ID:
+      services: [web]
+      input:
+        label: GitHub OAuth client ID
+        description: Optional. Set with the secret to enable "Continue with GitHub". Callback URL is <app URL>/api/auth/callback/github.
+        required: false
+    GITHUB_CLIENT_SECRET:
+      services: [web]
+      input:
+        label: GitHub OAuth client secret
+        required: false
+        secret: true
+    GOOGLE_CLIENT_ID:
+      services: [web]
+      input:
+        label: Google OAuth client ID
+        description: Optional. Set with the secret to enable "Continue with Google". Callback URL is <app URL>/api/auth/callback/google.
+        required: false
+    GOOGLE_CLIENT_SECRET:
+      services: [web]
+      input:
+        label: Google OAuth client secret
+        required: false
+        secret: true
 
 services:
   web:

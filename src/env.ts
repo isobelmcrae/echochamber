@@ -11,4 +11,20 @@ export const variables = defineEnvVars({
     description: "Path to the SQLite database file",
     schema: (value) => value || "local.db",
   },
+  GITHUB_CLIENT_ID: {
+    description: "GitHub OAuth app client ID. Leave unset (with the secret) to hide GitHub sign-in",
+    schema: (value) => value || undefined,
+  },
+  GITHUB_CLIENT_SECRET: {
+    description: "GitHub OAuth app client secret",
+    schema: (value) => value || undefined,
+  },
+  GOOGLE_CLIENT_ID: {
+    description: "Google OAuth client ID. Leave unset (with the secret) to hide Google sign-in",
+    schema: (value) => value || undefined,
+  },
+  GOOGLE_CLIENT_SECRET: {
+    description: "Google OAuth client secret",
+    schema: (value) => value || undefined,
+  },
 });
