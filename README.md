@@ -1,5 +1,7 @@
 # echochamber
 
+![echochamber: Watch later, but for real.](static/banner.png)
+
 Private rooms for sharing links with friends. Invite people to a room, post
 links (with automatic previews), and talk about them in comments, all updating
 live. Built with SvelteKit, Svelte 5, Better Auth, and SQLite.
