@@ -68,7 +68,7 @@ export async function createRoom(
   return id;
 }
 
-/** The user's rooms, most recently active first, with every member for display. */
+/** The user's rooms, their personal one first then most recently active, with every member for display. */
 export async function listRooms(userId: string) {
   return db
     .selectFrom("room")
@@ -78,6 +78,7 @@ export async function listRooms(userId: string) {
     .select((eb) => [
       "room.id",
       "room.title",
+      "room.personal_of",
       ink(eb),
       "room.updated_at",
       "me.role",
@@ -112,6 +113,7 @@ export async function listRooms(userId: string) {
           .orderBy("room_member.joined_at"),
       ).as("members"),
     ])
+    .orderBy(sql`room.personal_of is null`)
     .orderBy("room.updated_at", "desc")
     .execute();
 }
@@ -135,6 +137,7 @@ export async function getRoom(roomId: string, userId: string) {
     .select((eb) => [
       "room.id",
       "room.title",
+      "room.personal_of",
       ink(eb),
       jsonArrayFrom(
         eb
@@ -214,7 +217,7 @@ export async function setRole(actorId: string, roomId: string, targetId: string,
 
 /** Leave a room. The last member leaving deletes it; the last admin can't leave others behind. */
 export async function leaveRoom(userId: string, roomId: string) {
-  const role = await requireMember(roomId, userId);
+  const role = await requireMember(roomId, userId, "room.leave");
   await db.transaction().execute(async (tx) => {
     const { members } = await tx
       .selectFrom("room_member")

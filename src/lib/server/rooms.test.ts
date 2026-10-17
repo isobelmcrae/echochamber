@@ -11,9 +11,9 @@ import {
   setRole,
   setRoomInk,
 } from "./rooms.ts";
-import { acceptInvite } from "./invites.ts";
+import { createInviteLink, inviteByUsername, acceptInvite } from "./invites.ts";
 import { postLink } from "./links.ts";
-import { addMember, createUser } from "./test-utils.ts";
+import { addMember, createUser, sharedRooms } from "./test-utils.ts";
 
 describe("rooms", () => {
   beforeEach(() => vi.useFakeTimers({ toFake: ["Date"] }));
@@ -41,7 +41,7 @@ describe("rooms", () => {
     await createRoom(bob.id, { title: "bob's" });
     vi.setSystemTime(Date.now() + 1000);
     await renameRoom(alice.id, first, "first, renamed");
-    expect((await listRooms(alice.id)).map((r) => r.id)).toEqual([first, second]);
+    expect((await sharedRooms(alice.id)).map((r) => r.id)).toEqual([first, second]);
   });
 
   it("lets admins rename, but not members", async () => {
@@ -57,7 +57,7 @@ describe("rooms", () => {
     const alice = await createUser();
     const first = await createRoom(alice.id, {});
     const second = await createRoom(alice.id, {});
-    const inks = (await listRooms(alice.id)).map((r) => r.ink.a);
+    const inks = (await sharedRooms(alice.id)).map((r) => r.ink.a);
     expect(new Set(inks).size).toBe(2);
     expect((await getRoom(first, alice.id)).ink).not.toEqual((await getRoom(second, alice.id)).ink);
   });
@@ -80,7 +80,7 @@ describe("rooms", () => {
     await expect(setRoomInk(bob.id, roomId, ink)).rejects.toMatchObject({ status: 403 });
     await setRoomInk(alice.id, roomId, ink);
     expect((await getRoom(roomId, bob.id)).ink).toEqual(ink);
-    expect((await listRooms(bob.id))[0]!.ink).toEqual(ink);
+    expect((await sharedRooms(bob.id))[0]!.ink).toEqual(ink);
   });
 
   it("lets admins kick members, who then lose access", async () => {
@@ -110,14 +110,14 @@ describe("rooms", () => {
     await addMember(roomId, bob.id, "member");
     await expect(leaveRoom(alice.id, roomId)).rejects.toMatchObject({ status: 409 });
     await leaveRoom(bob.id, roomId);
-    expect(await listRooms(bob.id)).toEqual([]);
+    expect(await sharedRooms(bob.id)).toEqual([]);
   });
 
   it("deletes the room when its only member leaves", async () => {
     const alice = await createUser();
     const roomId = await createRoom(alice.id, {});
     await leaveRoom(alice.id, roomId);
-    expect(await listRooms(alice.id)).toEqual([]);
+    expect(await sharedRooms(alice.id)).toEqual([]);
   });
 
   it("lets only admins delete a room", async () => {
@@ -126,7 +126,49 @@ describe("rooms", () => {
     await addMember(roomId, bob.id, "member");
     await expect(deleteRoom(bob.id, roomId)).rejects.toMatchObject({ status: 403 });
     await deleteRoom(alice.id, roomId);
-    expect(await listRooms(bob.id)).toEqual([]);
+    expect(await sharedRooms(bob.id)).toEqual([]);
+  });
+});
+
+describe("personal room", () => {
+  beforeEach(() => vi.useFakeTimers({ toFake: ["Date"] }));
+  afterEach(() => vi.useRealTimers());
+
+  const personal = async (userId: string) =>
+    (await listRooms(userId)).find((r) => r.personal_of === userId)!;
+
+  it("is made for every new user, with only them in it", async () => {
+    const alice = await createUser();
+    const rooms = await listRooms(alice.id);
+    expect(rooms).toHaveLength(1);
+    const room = await getRoom(rooms[0]!.id, alice.id);
+    expect(room).toMatchObject({ title: "Personal", personal_of: alice.id, role: "admin" });
+    expect(room.members.map((m) => m.id)).toEqual([alice.id]);
+  });
+
+  it("is pinned above rooms with newer activity", async () => {
+    const alice = await createUser();
+    vi.setSystemTime(Date.now() + 60_000);
+    const other = await createRoom(alice.id, {});
+    const { id } = await personal(alice.id);
+    expect((await listRooms(alice.id)).map((r) => r.id)).toEqual([id, other]);
+  });
+
+  it("can't have anyone else invited to it", async () => {
+    const [alice, bob] = [await createUser(), await createUser()];
+    const { id } = await personal(alice.id);
+    await expect(inviteByUsername(alice.id, id, bob.username)).rejects.toMatchObject({
+      status: 403,
+    });
+    await expect(createInviteLink(alice.id, id, {})).rejects.toMatchObject({ status: 403 });
+  });
+
+  it("can't be deleted or left", async () => {
+    const alice = await createUser();
+    const { id } = await personal(alice.id);
+    await expect(deleteRoom(alice.id, id)).rejects.toMatchObject({ status: 403 });
+    await expect(leaveRoom(alice.id, id)).rejects.toMatchObject({ status: 403 });
+    expect((await getRoom(id, alice.id)).members).toHaveLength(1);
   });
 });
 
@@ -143,7 +185,7 @@ describe("createRoom with someone", () => {
     await expect(createRoom(alice.id, { with: "nobody_here" })).rejects.toMatchObject({
       status: 404,
     });
-    expect(await listRooms(alice.id)).toEqual([]);
+    expect(await sharedRooms(alice.id)).toEqual([]);
   });
 });
 

@@ -14,7 +14,7 @@ import {
 } from "./invites.ts";
 import { listQueue, postLink } from "./links.ts";
 import { createRoom, getRoom, listRooms } from "./rooms.ts";
-import { addMember, createUser } from "./test-utils.ts";
+import { addMember, createUser, sharedRooms } from "./test-utils.ts";
 
 async function setup() {
   const [alice, bob] = [await createUser("alice"), await createUser("bob")];
@@ -57,7 +57,7 @@ describe("username invites", () => {
     await declineInvite(bob.id, roomId);
     await cancelInvite(alice.id, roomId, carol.id);
     expect(await listRoomInvites(alice.id, roomId)).toEqual([]);
-    expect(await listRooms(bob.id)).toEqual([]);
+    expect(await sharedRooms(bob.id)).toEqual([]);
   });
 
   it("is only for admins, and rejects unknown users and existing members", async () => {

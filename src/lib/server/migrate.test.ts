@@ -16,6 +16,8 @@ describe("migrate", () => {
       .where("id", "=", id)
       .executeTakeFirstOrThrow();
     expect(user.username).toMatch(/^alice_\d+$/);
-    await expect(db.selectFrom("room").selectAll().execute()).resolves.toEqual([]);
+    await expect(db.selectFrom("room").select("personal_of").execute()).resolves.toEqual([
+      { personal_of: id },
+    ]);
   });
 });

@@ -29,6 +29,8 @@
 	refreshOnChange(() => [getRoom(page.params.roomId!)]);
 	const room = $derived(await getRoom(page.params.roomId!));
 	const isAdmin = $derived(room.role === 'admin');
+	// Only ever its owner's: nobody to invite or manage, and it can't be left or deleted.
+	const personal = $derived(room.personal_of !== null);
 
 	// Optimistic, so the whole app (sidebar included) reprints the moment a swatch is picked.
 	function recolour({ a, b }: Ink) {
@@ -61,7 +63,7 @@
 		<Button variant="ghost" size="sm" href="/rooms/{room.id}">Back to room</Button>
 	</div>
 
-	{#if isAdmin}<InviteCard roomId={room.id} />{/if}
+	{#if isAdmin && !personal}<InviteCard roomId={room.id} />{/if}
 
 	{#if isAdmin}
 		<Card.Root>
@@ -133,7 +135,7 @@
 						</div>
 						<div class="flex items-center gap-2">
 							{#if member.role === 'admin'}<Badge variant="secondary">Admin</Badge>{/if}
-							{#if isAdmin}
+							{#if isAdmin && !personal}
 								<DropdownMenu.Root>
 									<DropdownMenu.Trigger>
 										{#snippet child({ props })}
@@ -175,8 +177,10 @@
 		</Card.Content>
 	</Card.Root>
 
-	<div class="flex justify-end gap-2">
-		<Button variant="outline" onclick={leave}>Leave room</Button>
-		{#if isAdmin}<Button variant="destructive" onclick={destroy}>Delete room</Button>{/if}
-	</div>
+	{#if !personal}
+		<div class="flex justify-end gap-2">
+			<Button variant="outline" onclick={leave}>Leave room</Button>
+			{#if isAdmin}<Button variant="destructive" onclick={destroy}>Delete room</Button>{/if}
+		</div>
+	{/if}
 </div>

@@ -11,6 +11,7 @@ const PERMISSIONS = {
   "comment.create": ["admin", "member"],
   "room.update": ["admin"],
   "room.delete": ["admin"],
+  "room.leave": ["admin", "member"],
   "member.invite": ["admin"],
   "member.kick": ["admin"],
   "member.setRole": ["admin"],
@@ -18,6 +19,13 @@ const PERMISSIONS = {
 } as const satisfies Record<string, readonly Role[]>;
 
 export type Action = keyof typeof PERMISSIONS;
+
+// A personal room is only ever its owner's, so no one can share it or get rid of it.
+const NOT_IN_PERSONAL_ROOMS: ReadonlySet<Action> = new Set([
+  "member.invite",
+  "room.delete",
+  "room.leave",
+]);
 
 export function can(role: Role, action: Action) {
   return (PERMISSIONS[action] as readonly Role[]).includes(role);
@@ -30,11 +38,15 @@ export function can(role: Role, action: Action) {
 export async function requireMember(roomId: string, userId: string, action?: Action) {
   const member = await db
     .selectFrom("room_member")
-    .select("role")
-    .where("room_id", "=", roomId)
-    .where("user_id", "=", userId)
+    .innerJoin("room", "room.id", "room_member.room_id")
+    .select(["room_member.role", "room.personal_of"])
+    .where("room_member.room_id", "=", roomId)
+    .where("room_member.user_id", "=", userId)
     .executeTakeFirst();
   if (!member) error(404, "Room not found");
   if (action && !can(member.role, action)) error(403, "You don't have permission to do that");
+  if (action && member.personal_of && NOT_IN_PERSONAL_ROOMS.has(action)) {
+    error(403, "Your personal room is just for you");
+  }
   return member.role;
 }

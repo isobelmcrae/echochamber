@@ -9,7 +9,7 @@ import {
   postLink,
 } from "./links.ts";
 import { createRoom, listRooms, markRead } from "./rooms.ts";
-import { addMember, createUser } from "./test-utils.ts";
+import { addMember, createUser, sharedRooms } from "./test-utils.ts";
 
 async function setup() {
   const [alice, bob] = [await createUser("alice"), await createUser("bob")];
@@ -79,7 +79,7 @@ describe("links", () => {
     const other = await createRoom(bob.id, { title: "other" });
     tick();
     await postLink(alice.id, roomId, { url: "https://example.com" });
-    expect((await listRooms(bob.id)).map((r) => r.id)).toEqual([roomId, other]);
+    expect((await sharedRooms(bob.id)).map((r) => r.id)).toEqual([roomId, other]);
   });
 
   it("lets only the author edit the note", async () => {

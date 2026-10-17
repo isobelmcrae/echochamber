@@ -24,6 +24,8 @@ interface RoomTable {
   /** The ink pair every member sees the room printed in, as lowercase `#rrggbb`. */
   ink_a: string;
   ink_b: string;
+  /** Set on a user's personal room (one each, made by a trigger): only they're ever in it. */
+  personal_of: string | null;
   created_by: string | null;
   created_at: number;
   updated_at: number;

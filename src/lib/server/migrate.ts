@@ -11,6 +11,7 @@ import * as linkSeen from "./migrations/0008_link_seen.ts";
 import * as previewPageStatus from "./migrations/0009_preview_page_status.ts";
 import * as roomInk from "./migrations/0010_room_ink.ts";
 import * as linkSearch from "./migrations/0011_link_search.ts";
+import * as personalRoom from "./migrations/0012_personal_room.ts";
 
 // Ordered by key. Never edit a migration that has shipped; add a new one.
 const migrations = {
@@ -25,6 +26,7 @@ const migrations = {
   "0009_preview_page_status": previewPageStatus,
   "0010_room_ink": roomInk,
   "0011_link_search": linkSearch,
+  "0012_personal_room": personalRoom,
 };
 
 // Takes the database rather than importing db.ts so scripts can run it too.

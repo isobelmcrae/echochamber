@@ -37,6 +37,9 @@
 		onNewRoom: () => void;
 	} = $props();
 
+	const personal = $derived(rooms.find((room) => room.personal_of));
+	const others = $derived(rooms.filter((room) => !room.personal_of));
+
 	const sidebar = Sidebar.useSidebar();
 	let aboutOpen = $state(false);
 	const inks = getRoomInks();
@@ -53,6 +56,38 @@
 		await goto('/login');
 	}
 </script>
+
+{#snippet roomItem(room: Room)}
+	{@const name = roomName(room, me.id)}
+	{@const person = roomPerson(room, me.id)}
+	{@const active = page.params.roomId === room.id}
+	<Sidebar.MenuItem {...inkVars(inks.of(room.id))}>
+		<Sidebar.MenuButton
+			size="lg"
+			isActive={active}
+			class="hover:bg-ink-a/25 active:bg-ink-a/40 data-active:bg-ink-a data-active:text-ink data-active:font-bold data-active:hover:text-ink data-active:hover:bg-[color-mix(in_oklab,var(--ink-a)_88%,var(--ink))]"
+		>
+			{#snippet child({ props })}
+				<a
+					href="/rooms/{room.id}"
+					{...props}
+					onclick={() => sidebar.setOpenMobile(false)}
+				>
+					<UserAvatar {name} image={person?.image} />
+					<span class="flex-1 truncate">{name}</span>
+					{#if !active && room.unread > 0}
+						<span
+							class="bg-ink-a text-ink rounded-sm px-1.5 py-0.5 text-xs font-bold tabular-nums"
+							aria-label="{room.unread} unread"
+						>
+							{room.unread > 9 ? '9+' : room.unread}
+						</span>
+					{/if}
+				</a>
+			{/snippet}
+		</Sidebar.MenuButton>
+	</Sidebar.MenuItem>
+{/snippet}
 
 <Sidebar.Root>
 	<Sidebar.Header class="gap-3 p-4">
@@ -104,40 +139,18 @@
 			</Sidebar.Group>
 		{/if}
 
+		{#if personal}
+			<Sidebar.Group>
+				<Sidebar.Menu>{@render roomItem(personal)}</Sidebar.Menu>
+			</Sidebar.Group>
+		{/if}
+
 		<Sidebar.Group>
 			<Sidebar.GroupLabel>Rooms</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
-					{#each rooms as room (room.id)}
-						{@const name = roomName(room, me.id)}
-						{@const person = roomPerson(room, me.id)}
-						{@const active = page.params.roomId === room.id}
-						<Sidebar.MenuItem {...inkVars(inks.of(room.id))}>
-							<Sidebar.MenuButton
-								size="lg"
-								isActive={active}
-								class="hover:bg-ink-a/25 active:bg-ink-a/40 data-active:bg-ink-a data-active:text-ink data-active:font-bold data-active:hover:text-ink data-active:hover:bg-[color-mix(in_oklab,var(--ink-a)_88%,var(--ink))]"
-							>
-								{#snippet child({ props })}
-									<a
-										href="/rooms/{room.id}"
-										{...props}
-										onclick={() => sidebar.setOpenMobile(false)}
-									>
-										<UserAvatar {name} image={person?.image} />
-										<span class="flex-1 truncate">{name}</span>
-										{#if !active && room.unread > 0}
-											<span
-												class="bg-ink-a text-ink rounded-sm px-1.5 py-0.5 text-xs font-bold tabular-nums"
-												aria-label="{room.unread} unread"
-											>
-												{room.unread > 9 ? '9+' : room.unread}
-											</span>
-										{/if}
-									</a>
-								{/snippet}
-							</Sidebar.MenuButton>
-						</Sidebar.MenuItem>
+					{#each others as room (room.id)}
+						{@render roomItem(room)}
 					{:else}
 						<p class="px-2 text-sm opacity-70">No rooms yet.</p>
 					{/each}

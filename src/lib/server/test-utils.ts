@@ -1,6 +1,7 @@
 import { auth } from "./auth.ts";
 import { db } from "./db.ts";
 import type { Role } from "./permissions.ts";
+import { listRooms } from "./rooms.ts";
 
 let counter = 0;
 
@@ -29,4 +30,9 @@ export async function addMember(roomId: string, userId: string, role: Role) {
     .insertInto("room_member")
     .values({ room_id: roomId, user_id: userId, role, joined_at: Date.now() })
     .execute();
+}
+
+/** The user's rooms besides their personal one, in `listRooms` order. */
+export async function sharedRooms(userId: string) {
+  return (await listRooms(userId)).filter((room) => !room.personal_of);
 }
