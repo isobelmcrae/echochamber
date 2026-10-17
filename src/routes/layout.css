@@ -209,21 +209,6 @@
     box-shadow: inset 0 0 0 1.5px var(--ink-text);
   }
 
-  /* A sharer's note, run through a highlighter of the room's light ink. */
-  .ink-highlight {
-    background: linear-gradient(transparent 40%, var(--ink-a) 40%);
-    padding-inline: 0.15em;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
-    color: var(--foreground);
-  }
-  .dark .ink-highlight {
-    /* Light type can't sit on the ink, so on dark stock the note prints in black on it. */
-    background: var(--ink-a);
-    color: var(--ink);
-    border-radius: 0.125rem;
-  }
-
   /*
    * A preview printed as a two-ink riso: the light ink carries the tone, the dark ink prints the
    * shadows through a halftone screen (solid at full tone), a pixel off register. It rests in full colour and prints in ink on hover.
