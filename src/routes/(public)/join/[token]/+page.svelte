@@ -21,13 +21,13 @@
 
 <svelte:boundary>
 	{@const room = await invitePreview(token)}
-	<Card.Root class="mx-auto mt-16 w-full max-w-sm text-center">
+	<Card.Root class="mx-auto mt-8 w-full max-w-sm text-center">
 		<Card.Header>
 			<Card.Description>You're invited to join</Card.Description>
-			<Card.Title class="text-xl">{roomName(room, '')}</Card.Title>
+			<Card.Title class="room-band mx-auto w-fit text-2xl">{roomName(room, '')}</Card.Title>
 			<Card.Description>
 				{room.members.length}
-				{room.members.length === 1 ? 'member' : 'members'} on Echo Chamber
+				{room.members.length === 1 ? 'member' : 'members'} on echochamber
 			</Card.Description>
 		</Card.Header>
 		<Card.Footer class="flex-col gap-2">
@@ -41,7 +41,7 @@
 	</Card.Root>
 
 	{#snippet failed(error)}
-		<Card.Root class="mx-auto mt-16 w-full max-w-sm text-center">
+		<Card.Root class="mx-auto mt-8 w-full max-w-sm text-center">
 			<Card.Header>
 				<Card.Title>Invite unavailable</Card.Title>
 				<Card.Description>

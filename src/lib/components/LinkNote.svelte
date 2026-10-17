@@ -29,5 +29,7 @@
 		<Button size="sm" onclick={save}>Save</Button>
 	</div>
 {:else if note}
-	<p class="text-sm whitespace-pre-wrap">{note}</p>
+	<p class="text-[0.8125rem] leading-relaxed font-medium whitespace-pre-wrap">
+		<span class="ink-highlight">{note}</span>
+	</p>
 {/if}

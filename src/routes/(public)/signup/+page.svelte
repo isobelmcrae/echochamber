@@ -40,9 +40,9 @@
 	}
 </script>
 
-<Card.Root class="mx-auto mt-12 w-full max-w-sm">
+<Card.Root class="mx-auto mt-8 w-full max-w-sm">
 	<Card.Header>
-		<Card.Title>Create an account</Card.Title>
+		<Card.Title class="room-band w-fit text-2xl">Create an account</Card.Title>
 		<Card.Description>Friends find and invite you by your username.</Card.Description>
 	</Card.Header>
 	<Card.Content>

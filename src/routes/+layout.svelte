@@ -15,7 +15,7 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<title>Echo Chamber</title>
+	<title>echochamber</title>
 </svelte:head>
 
 <ModeWatcher />

@@ -1,0 +1,673 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-17T04:38:41.579Z",
+  "title": "Design System: echochamber",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#fbfbf8",
+        "tonalRamp": [
+          "oklch(15% 0.004 106.5)",
+          "oklch(27% 0.004 106.5)",
+          "oklch(39% 0.004 106.5)",
+          "oklch(51% 0.004 106.5)",
+          "oklch(63% 0.004 106.5)",
+          "oklch(75% 0.004 106.5)",
+          "oklch(85% 0.004 106.5)",
+          "oklch(95% 0.004 106.5)"
+        ]
+      },
+      "riso-black": {
+        "role": "neutral",
+        "displayName": "Riso Black",
+        "canonical": "#1d1d1b",
+        "tonalRamp": [
+          "oklch(15% 0.004 106.7)",
+          "oklch(27% 0.004 106.7)",
+          "oklch(39% 0.004 106.7)",
+          "oklch(51% 0.004 106.7)",
+          "oklch(63% 0.004 106.7)",
+          "oklch(75% 0.004 106.7)",
+          "oklch(85% 0.004 106.7)",
+          "oklch(95% 0.004 106.7)"
+        ]
+      },
+      "fluorescent-pink": {
+        "role": "primary",
+        "displayName": "Fluorescent Pink",
+        "canonical": "#ff48b0",
+        "tonalRamp": [
+          "oklch(15% 0.111 350.2)",
+          "oklch(27% 0.2 350.2)",
+          "oklch(39% 0.236 350.2)",
+          "oklch(51% 0.236 350.2)",
+          "oklch(63% 0.236 350.2)",
+          "oklch(75% 0.185 350.2)",
+          "oklch(85% 0.111 350.2)",
+          "oklch(95% 0.037 350.2)"
+        ]
+      },
+      "riso-blue": {
+        "role": "secondary",
+        "displayName": "Riso Blue",
+        "canonical": "#0078bf",
+        "tonalRamp": [
+          "oklch(15% 0.111 245.5)",
+          "oklch(27% 0.141 245.5)",
+          "oklch(39% 0.141 245.5)",
+          "oklch(51% 0.141 245.5)",
+          "oklch(63% 0.141 245.5)",
+          "oklch(75% 0.141 245.5)",
+          "oklch(85% 0.111 245.5)",
+          "oklch(95% 0.037 245.5)"
+        ]
+      },
+      "sunflower": {
+        "role": "tertiary",
+        "displayName": "Sunflower",
+        "canonical": "#ffb511",
+        "tonalRamp": [
+          "oklch(15% 0.111 78.5)",
+          "oklch(27% 0.169 78.5)",
+          "oklch(39% 0.169 78.5)",
+          "oklch(51% 0.169 78.5)",
+          "oklch(63% 0.169 78.5)",
+          "oklch(75% 0.169 78.5)",
+          "oklch(85% 0.111 78.5)",
+          "oklch(95% 0.037 78.5)"
+        ]
+      },
+      "teal": {
+        "role": "tertiary",
+        "displayName": "Teal",
+        "canonical": "#00838a",
+        "tonalRamp": [
+          "oklch(15% 0.094 201.4)",
+          "oklch(27% 0.094 201.4)",
+          "oklch(39% 0.094 201.4)",
+          "oklch(51% 0.094 201.4)",
+          "oklch(63% 0.094 201.4)",
+          "oklch(75% 0.094 201.4)",
+          "oklch(85% 0.094 201.4)",
+          "oklch(95% 0.037 201.4)"
+        ]
+      },
+      "green": {
+        "role": "tertiary",
+        "displayName": "Green",
+        "canonical": "#00a95c",
+        "tonalRamp": [
+          "oklch(15% 0.111 153.6)",
+          "oklch(27% 0.164 153.6)",
+          "oklch(39% 0.164 153.6)",
+          "oklch(51% 0.164 153.6)",
+          "oklch(63% 0.164 153.6)",
+          "oklch(75% 0.164 153.6)",
+          "oklch(85% 0.111 153.6)",
+          "oklch(95% 0.037 153.6)"
+        ]
+      },
+      "federal-blue": {
+        "role": "tertiary",
+        "displayName": "Federal Blue",
+        "canonical": "#3d5588",
+        "tonalRamp": [
+          "oklch(15% 0.089 264.1)",
+          "oklch(27% 0.089 264.1)",
+          "oklch(39% 0.089 264.1)",
+          "oklch(51% 0.089 264.1)",
+          "oklch(63% 0.089 264.1)",
+          "oklch(75% 0.089 264.1)",
+          "oklch(85% 0.089 264.1)",
+          "oklch(95% 0.037 264.1)"
+        ]
+      },
+      "yellow": {
+        "role": "tertiary",
+        "displayName": "Yellow",
+        "canonical": "#ffe800",
+        "tonalRamp": [
+          "oklch(15% 0.111 102.2)",
+          "oklch(27% 0.193 102.2)",
+          "oklch(39% 0.193 102.2)",
+          "oklch(51% 0.193 102.2)",
+          "oklch(63% 0.193 102.2)",
+          "oklch(75% 0.185 102.2)",
+          "oklch(85% 0.111 102.2)",
+          "oklch(95% 0.037 102.2)"
+        ]
+      },
+      "burgundy": {
+        "role": "tertiary",
+        "displayName": "Burgundy",
+        "canonical": "#914e72",
+        "tonalRamp": [
+          "oklch(15% 0.101 347.8)",
+          "oklch(27% 0.101 347.8)",
+          "oklch(39% 0.101 347.8)",
+          "oklch(51% 0.101 347.8)",
+          "oklch(63% 0.101 347.8)",
+          "oklch(75% 0.101 347.8)",
+          "oklch(85% 0.101 347.8)",
+          "oklch(95% 0.037 347.8)"
+        ]
+      },
+      "orange": {
+        "role": "tertiary",
+        "displayName": "Orange",
+        "canonical": "#ff6c2f",
+        "tonalRamp": [
+          "oklch(15% 0.111 40.7)",
+          "oklch(27% 0.193 40.7)",
+          "oklch(39% 0.193 40.7)",
+          "oklch(51% 0.193 40.7)",
+          "oklch(63% 0.193 40.7)",
+          "oklch(75% 0.185 40.7)",
+          "oklch(85% 0.111 40.7)",
+          "oklch(95% 0.037 40.7)"
+        ]
+      },
+      "medium-blue": {
+        "role": "tertiary",
+        "displayName": "Medium Blue",
+        "canonical": "#3255a4",
+        "tonalRamp": [
+          "oklch(15% 0.111 264)",
+          "oklch(27% 0.134 264)",
+          "oklch(39% 0.134 264)",
+          "oklch(51% 0.134 264)",
+          "oklch(63% 0.134 264)",
+          "oklch(75% 0.134 264)",
+          "oklch(85% 0.111 264)",
+          "oklch(95% 0.037 264)"
+        ]
+      },
+      "bright-red": {
+        "role": "tertiary",
+        "displayName": "Bright Red",
+        "canonical": "#ff665e",
+        "tonalRamp": [
+          "oklch(15% 0.111 26.1)",
+          "oklch(27% 0.188 26.1)",
+          "oklch(39% 0.188 26.1)",
+          "oklch(51% 0.188 26.1)",
+          "oklch(63% 0.188 26.1)",
+          "oklch(75% 0.185 26.1)",
+          "oklch(85% 0.111 26.1)",
+          "oklch(95% 0.037 26.1)"
+        ]
+      },
+      "pressed-paper": {
+        "role": "neutral",
+        "displayName": "Pressed Paper",
+        "canonical": "#efefe9",
+        "tonalRamp": [
+          "oklch(15% 0.008 106.6)",
+          "oklch(27% 0.008 106.6)",
+          "oklch(39% 0.008 106.6)",
+          "oklch(51% 0.008 106.6)",
+          "oklch(63% 0.008 106.6)",
+          "oklch(75% 0.008 106.6)",
+          "oklch(85% 0.008 106.6)",
+          "oklch(95% 0.008 106.6)"
+        ]
+      },
+      "worn-paper": {
+        "role": "neutral",
+        "displayName": "Worn Paper",
+        "canonical": "#ecece5",
+        "tonalRamp": [
+          "oklch(15% 0.009 106.6)",
+          "oklch(27% 0.009 106.6)",
+          "oklch(39% 0.009 106.6)",
+          "oklch(51% 0.009 106.6)",
+          "oklch(63% 0.009 106.6)",
+          "oklch(75% 0.009 106.6)",
+          "oklch(85% 0.009 106.6)",
+          "oklch(95% 0.009 106.6)"
+        ]
+      },
+      "binding-paper": {
+        "role": "neutral",
+        "displayName": "Binding Paper",
+        "canonical": "#f3f3ee",
+        "tonalRamp": [
+          "oklch(15% 0.007 106.5)",
+          "oklch(27% 0.007 106.5)",
+          "oklch(39% 0.007 106.5)",
+          "oklch(51% 0.007 106.5)",
+          "oklch(63% 0.007 106.5)",
+          "oklch(75% 0.007 106.5)",
+          "oklch(85% 0.007 106.5)",
+          "oklch(95% 0.007 106.5)"
+        ]
+      },
+      "binding-paper-hover": {
+        "role": "neutral",
+        "displayName": "Binding Paper Hover",
+        "canonical": "#e7e7e0",
+        "tonalRamp": [
+          "oklch(15% 0.009 106.6)",
+          "oklch(27% 0.009 106.6)",
+          "oklch(39% 0.009 106.6)",
+          "oklch(51% 0.009 106.6)",
+          "oklch(63% 0.009 106.6)",
+          "oklch(75% 0.009 106.6)",
+          "oklch(85% 0.009 106.6)",
+          "oklch(95% 0.009 106.6)"
+        ]
+      },
+      "graphite": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "#63635c",
+        "tonalRamp": [
+          "oklch(15% 0.011 106.8)",
+          "oklch(27% 0.011 106.8)",
+          "oklch(39% 0.011 106.8)",
+          "oklch(51% 0.011 106.8)",
+          "oklch(63% 0.011 106.8)",
+          "oklch(75% 0.011 106.8)",
+          "oklch(85% 0.011 106.8)",
+          "oklch(95% 0.011 106.8)"
+        ]
+      },
+      "sheet-white": {
+        "role": "neutral",
+        "displayName": "Sheet White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "oklch(15% 0 89.9)",
+          "oklch(27% 0 89.9)",
+          "oklch(39% 0 89.9)",
+          "oklch(51% 0 89.9)",
+          "oklch(63% 0 89.9)",
+          "oklch(75% 0 89.9)",
+          "oklch(85% 0 89.9)",
+          "oklch(95% 0 89.9)"
+        ]
+      },
+      "misprint-red": {
+        "role": "error",
+        "displayName": "Misprint Red",
+        "canonical": "#d4252b",
+        "tonalRamp": [
+          "oklch(15% 0.111 25.9)",
+          "oklch(27% 0.2 25.9)",
+          "oklch(39% 0.208 25.9)",
+          "oklch(51% 0.208 25.9)",
+          "oklch(63% 0.208 25.9)",
+          "oklch(75% 0.185 25.9)",
+          "oklch(85% 0.111 25.9)",
+          "oklch(95% 0.037 25.9)"
+        ]
+      },
+      "night-stock": {
+        "role": "neutral",
+        "displayName": "Night Stock",
+        "canonical": "#151418",
+        "tonalRamp": [
+          "oklch(15% 0.008 297.1)",
+          "oklch(27% 0.008 297.1)",
+          "oklch(39% 0.008 297.1)",
+          "oklch(51% 0.008 297.1)",
+          "oklch(63% 0.008 297.1)",
+          "oklch(75% 0.008 297.1)",
+          "oklch(85% 0.008 297.1)",
+          "oklch(95% 0.008 297.1)"
+        ]
+      },
+      "night-binding": {
+        "role": "neutral",
+        "displayName": "Night Binding",
+        "canonical": "#0d0c0f",
+        "tonalRamp": [
+          "oklch(15% 0.006 300.8)",
+          "oklch(27% 0.006 300.8)",
+          "oklch(39% 0.006 300.8)",
+          "oklch(51% 0.006 300.8)",
+          "oklch(63% 0.006 300.8)",
+          "oklch(75% 0.006 300.8)",
+          "oklch(85% 0.006 300.8)",
+          "oklch(95% 0.006 300.8)"
+        ]
+      },
+      "night-sheet": {
+        "role": "neutral",
+        "displayName": "Night Sheet",
+        "canonical": "#1e1d22",
+        "tonalRamp": [
+          "oklch(15% 0.01 294.8)",
+          "oklch(27% 0.01 294.8)",
+          "oklch(39% 0.01 294.8)",
+          "oklch(51% 0.01 294.8)",
+          "oklch(63% 0.01 294.8)",
+          "oklch(75% 0.01 294.8)",
+          "oklch(85% 0.01 294.8)",
+          "oklch(95% 0.01 294.8)"
+        ]
+      },
+      "night-pressed": {
+        "role": "neutral",
+        "displayName": "Night Pressed",
+        "canonical": "#26252b",
+        "tonalRamp": [
+          "oklch(15% 0.011 293.3)",
+          "oklch(27% 0.011 293.3)",
+          "oklch(39% 0.011 293.3)",
+          "oklch(51% 0.011 293.3)",
+          "oklch(63% 0.011 293.3)",
+          "oklch(75% 0.011 293.3)",
+          "oklch(85% 0.011 293.3)",
+          "oklch(95% 0.011 293.3)"
+        ]
+      },
+      "night-worn": {
+        "role": "neutral",
+        "displayName": "Night Worn",
+        "canonical": "#2a2930",
+        "tonalRamp": [
+          "oklch(15% 0.013 292.1)",
+          "oklch(27% 0.013 292.1)",
+          "oklch(39% 0.013 292.1)",
+          "oklch(51% 0.013 292.1)",
+          "oklch(63% 0.013 292.1)",
+          "oklch(75% 0.013 292.1)",
+          "oklch(85% 0.013 292.1)",
+          "oklch(95% 0.013 292.1)"
+        ]
+      },
+      "night-binding-hover": {
+        "role": "neutral",
+        "displayName": "Night Binding Hover",
+        "canonical": "#222126",
+        "tonalRamp": [
+          "oklch(15% 0.009 294.9)",
+          "oklch(27% 0.009 294.9)",
+          "oklch(39% 0.009 294.9)",
+          "oklch(51% 0.009 294.9)",
+          "oklch(63% 0.009 294.9)",
+          "oklch(75% 0.009 294.9)",
+          "oklch(85% 0.009 294.9)",
+          "oklch(95% 0.009 294.9)"
+        ]
+      },
+      "night-type": {
+        "role": "neutral",
+        "displayName": "Night Type",
+        "canonical": "#f2f1ec",
+        "tonalRamp": [
+          "oklch(15% 0.007 97.4)",
+          "oklch(27% 0.007 97.4)",
+          "oklch(39% 0.007 97.4)",
+          "oklch(51% 0.007 97.4)",
+          "oklch(63% 0.007 97.4)",
+          "oklch(75% 0.007 97.4)",
+          "oklch(85% 0.007 97.4)",
+          "oklch(95% 0.007 97.4)"
+        ]
+      },
+      "night-graphite": {
+        "role": "neutral",
+        "displayName": "Night Graphite",
+        "canonical": "#a6a59e",
+        "tonalRamp": [
+          "oklch(15% 0.01 100)",
+          "oklch(27% 0.01 100)",
+          "oklch(39% 0.01 100)",
+          "oklch(51% 0.01 100)",
+          "oklch(63% 0.01 100)",
+          "oklch(75% 0.01 100)",
+          "oklch(85% 0.01 100)",
+          "oklch(95% 0.01 100)"
+        ]
+      },
+      "night-ring": {
+        "role": "secondary",
+        "displayName": "Night Ring",
+        "canonical": "#5ec8e5",
+        "tonalRamp": [
+          "oklch(15% 0.105 218.4)",
+          "oklch(27% 0.105 218.4)",
+          "oklch(39% 0.105 218.4)",
+          "oklch(51% 0.105 218.4)",
+          "oklch(63% 0.105 218.4)",
+          "oklch(75% 0.105 218.4)",
+          "oklch(85% 0.105 218.4)",
+          "oklch(95% 0.037 218.4)"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "rgb(29 29 27 / 14%)"
+      },
+      "field-rule": {
+        "role": "neutral",
+        "displayName": "Field Rule",
+        "canonical": "rgb(29 29 27 / 24%)"
+      },
+      "night-hairline": {
+        "role": "neutral",
+        "displayName": "Night Hairline",
+        "canonical": "rgb(255 255 255 / 12%)"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Wordmark",
+        "purpose": "The wordmark only (26px app bar, 28px sidebar, 36px auth), with a fluorescent-pink overprint offset -0.06em 0.04em."
+      },
+      "headline": {
+        "displayName": "Room Band",
+        "purpose": "Room names in a room band: 26px on the home queue, 32px on a room page."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card and empty-state titles; the viewer's link title runs 18px."
+      },
+      "link-title": {
+        "displayName": "Link Title",
+        "purpose": "Link row title, two-line clamp."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Forms and comments."
+      },
+      "meta": {
+        "displayName": "Meta",
+        "purpose": "Site name (600, ink type), description (graphite), note (500), author line."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Button labels."
+      }
+    },
+    "inkPairs": [
+      {
+        "a": "fluorescent-pink",
+        "b": "riso-blue"
+      },
+      {
+        "a": "sunflower",
+        "b": "teal"
+      },
+      {
+        "a": "green",
+        "b": "federal-blue"
+      },
+      {
+        "a": "yellow",
+        "b": "burgundy"
+      },
+      {
+        "a": "orange",
+        "b": "medium-blue"
+      },
+      {
+        "a": "bright-red",
+        "b": "teal"
+      }
+    ],
+    "inkVariables": {
+      "--ink-a": "Light ink of the pair in scope (app default fluorescent pink). Fills bands, badges, spots, highlights, tone plate.",
+      "--ink-b": "Dark ink of the pair in scope (app default riso blue). Rules, shadow and key plates, avatar fallbacks.",
+      "--ink-text": "Ink type: color-mix(in oklab, var(--ink-b) 82%, #000) on paper; var(--ink-a) on night stock.",
+      "--reg": "Registered <length> custom property: how far the dark plates sit off register; animated 6px to 0 on live arrival."
+    },
+    "shadows": [
+      {
+        "name": "composer-float",
+        "value": "0 8px 24px -6px rgb(0 0 0 / 0.18)",
+        "purpose": "The sticky link composer on a room page only."
+      },
+      {
+        "name": "wordmark-overprint",
+        "value": "text-shadow: -0.06em 0.04em 0 var(--ink-a)",
+        "purpose": "Misregistered pink overprint on the wordmark; ink misregistration, not elevation."
+      }
+    ],
+    "motion": [
+      {
+        "name": "register",
+        "value": "opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Riso plates fade on hover to register the preview to full colour."
+      },
+      {
+        "name": "print-in",
+        "value": "520ms, exponential ease-out (1 - 2^(-10t))",
+        "purpose": "Live arrivals fade up 6px while --reg slides from 6px to 0. Zero duration under prefers-reduced-motion."
+      },
+      {
+        "name": "press",
+        "value": "translateY(1px)",
+        "purpose": "Button active state."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "md",
+        "value": "768px",
+        "purpose": "Sidebar docks beside the column; the mobile app bar hides."
+      },
+      {
+        "name": "viewer-@3xl",
+        "value": "768px container width",
+        "purpose": "Link viewer goes side by side with a 352px comment panel."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The main action; app pink with riso-black label, even inside a room.",
+      "html": "<button class=\"ds-btn-primary\">Post</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px; border: 1px solid transparent; border-radius: 3.2px; background: #ff48b0; color: #1d1d1b; font-family: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; } .ds-btn-primary:hover { background: color-mix(in oklab, #ff48b0, #1d1d1b 14%); } .ds-btn-primary:focus-visible { outline: none; border-color: #0078bf; box-shadow: 0 0 0 3px rgb(0 120 191 / 0.5); } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Ghost Comment Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Comment count on a link row; takes the room's ink type and border once the link has comments.",
+      "html": "<span style=\"display:flex;gap:8px\"><button class=\"ds-btn-ghost\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7.9 20A9 9 0 1 0 4 16.1L2 22Z\"/></svg>0</button><button class=\"ds-btn-ghost ds-btn-ghost--inked\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7.9 20A9 9 0 1 0 4 16.1L2 22Z\"/></svg>3</button></span>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 10px; border: 1px solid transparent; border-radius: 3.2px; background: transparent; color: #63635c; font-family: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; } .ds-btn-ghost:hover { background: #efefe9; color: #1d1d1b; } .ds-btn-ghost:focus-visible { outline: none; border-color: #0078bf; box-shadow: 0 0 0 3px rgb(0 120 191 / 0.5); } .ds-btn-ghost:active { transform: translateY(1px); } .ds-btn-ghost--inked { color: color-mix(in oklab, #3d5588 82%, #000); border-color: currentColor; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Transparent field with a field-rule outline; the caret is the dark ink.",
+      "html": "<input class=\"ds-input\" placeholder=\"Paste something...\" />",
+      "css": ".ds-input { height: 36px; width: 260px; padding: 0 10px; border: 1px solid rgb(29 29 27 / 24%); border-radius: 3.2px; background: transparent; color: #1d1d1b; caret-color: #0078bf; font-family: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif; font-size: 14px; transition: border-color 0.15s, box-shadow 0.15s; } .ds-input::placeholder { color: #63635c; } .ds-input:focus-visible { outline: none; border-color: #0078bf; box-shadow: 0 0 0 3px rgb(0 120 191 / 0.5); }"
+    },
+    {
+      "name": "Room Band",
+      "kind": "custom",
+      "refersTo": "room-band",
+      "description": "A room's name on a solid band of its light ink, ruled off in its dark ink.",
+      "html": "<h2 class=\"ds-room-head\" style=\"--ink-a:#00a95c;--ink-b:#3d5588\"><a class=\"ds-room-band\" href=\"#\">film club <svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></a><span class=\"ds-room-rule\"></span></h2>",
+      "css": ".ds-room-head { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 26px; font-family: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif; } .ds-room-band { display: inline-flex; align-items: center; gap: 0.4em; border-radius: 4px; background: var(--ink-a); padding: 0.2em 0.45em 0.28em; color: #1d1d1b; font-weight: 800; font-variation-settings: 'opsz' 72; letter-spacing: -0.02em; line-height: 1.05; text-decoration: none; } .ds-room-band svg { transition: transform 0.15s; } .ds-room-band:hover svg { transform: translateX(2px); } .ds-room-band:focus-visible { outline: 3px solid rgb(0 120 191 / 0.5); } .ds-room-rule { height: 2px; flex: 1; min-width: 16px; background: var(--ink-b); }"
+    },
+    {
+      "name": "Link Row",
+      "kind": "card",
+      "refersTo": "riso-thumbnail",
+      "description": "A queue row: riso thumbnail, site in ink type, heavy title with ink spot, highlighted note, author line; ruled off by a hairline.",
+      "html": "<article class=\"ds-row\" style=\"--ink-a:#ffe800;--ink-b:#914e72\"><a class=\"ds-row-link\" href=\"#\"><div class=\"ds-riso\"><div class=\"ds-plate-a\"></div><div class=\"ds-plate-b\"></div></div><div class=\"ds-row-text\"><p class=\"ds-site\">github.com</p><p class=\"ds-title\"><span class=\"ds-spot\"></span><span>A heavy two-line link title, clamped</span></p><p class=\"ds-desc\">Description in graphite, two lines at most.</p></div></a><p class=\"ds-note\"><span class=\"ds-highlight\">a note from the sharer</span></p><p class=\"ds-meta\"><span class=\"ds-avatar\">A</span><b>Author</b> · 2 hours ago</p></article>",
+      "css": ".ds-row { width: 360px; padding: 16px 0; border-bottom: 1px solid rgb(29 29 27 / 14%); background: #fbfbf8; color: #1d1d1b; font-family: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif; } .ds-row-link { display: flex; gap: 14px; color: inherit; text-decoration: none; border-radius: 2.4px; } .ds-row-link:hover .ds-title span:last-child { text-decoration: underline; text-underline-offset: 0.2em; } .ds-row-link:hover .ds-plate-a, .ds-row-link:hover .ds-plate-b { opacity: 0; } .ds-row-link:focus-visible { outline: 3px solid rgb(0 120 191 / 0.5); } .ds-riso { position: relative; flex: none; width: 80px; height: 80px; overflow: hidden; border-radius: 2.4px; background: linear-gradient(135deg, #7fb3d5, #f5c26b); } .ds-plate-a, .ds-plate-b { position: absolute; inset: 0; transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1); } .ds-plate-a { background: var(--ink-a); } .ds-plate-b { background: var(--ink-b); mix-blend-mode: multiply; transform: translate(1px, 0.5px); -webkit-mask: radial-gradient(circle, #000 44%, transparent 52%) 0 0 / 3px 3px, linear-gradient(160deg, transparent 45%, #000 100%); -webkit-mask-composite: source-in; mask: radial-gradient(circle, #000 44%, transparent 52%) 0 0 / 3px 3px, linear-gradient(160deg, transparent 45%, #000 100%); mask-composite: intersect; } .ds-row-text { min-width: 0; flex: 1; } .ds-row-text p { margin: 0 0 4px; } .ds-site { color: color-mix(in oklab, var(--ink-b) 82%, #000); font-size: 13px; font-weight: 600; } .ds-title { display: flex; align-items: flex-start; gap: 8px; font-size: 16px; font-weight: 800; line-height: 1.25; } .ds-spot { flex: none; width: 10px; height: 10px; margin-top: 0.3em; border-radius: 9999px; background: var(--ink-a); box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--ink-b) 82%, #000); } .ds-desc { color: #63635c; font-size: 13px; } .ds-note { margin: 8px 0; font-size: 13px; font-weight: 500; line-height: 1.6; } .ds-highlight { background: linear-gradient(transparent 40%, var(--ink-a) 40%); padding-inline: 0.15em; } .ds-meta { display: flex; align-items: center; gap: 6px; margin: 0; color: #63635c; font-size: 13px; } .ds-meta b { color: #1d1d1b; font-weight: 600; } .ds-avatar { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 9999px; background: var(--ink-b); color: #fff; font-size: 11px; font-weight: 700; }"
+    },
+    {
+      "name": "Ink Spot",
+      "kind": "chip",
+      "refersTo": "ink-spot",
+      "description": "Read state as a printed mark: solid spot unseen, hollow ring seen.",
+      "html": "<span style=\"display:flex;gap:12px;--ink-a:#ffb511;--ink-b:#00838a\"><span class=\"ds-spot\" title=\"Unseen\"></span><span class=\"ds-spot ds-spot--seen\" title=\"Seen\"></span></span>",
+      "css": ".ds-spot { display: inline-block; width: 10px; height: 10px; border-radius: 9999px; background: var(--ink-a); box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--ink-b) 82%, #000); } .ds-spot--seen { background: none; }"
+    },
+    {
+      "name": "Sidebar Room List",
+      "kind": "nav",
+      "refersTo": "sidebar-room-active",
+      "description": "Binding-paper sidebar; each room row in its own pair, the active one filled with its light ink, unseen counts as ink badges.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-wordmark\" href=\"#\">echochamber</a><a class=\"ds-nav-item ds-nav-item--active\" href=\"#\" style=\"--ink-a:#ff48b0\">Sam <span class=\"ds-badge\">2</span></a><a class=\"ds-nav-item\" href=\"#\" style=\"--ink-a:#00a95c\">film club <span class=\"ds-badge\">3</span></a><a class=\"ds-nav-item\" href=\"#\" style=\"--ink-a:#ffb511\">climbing crew</a></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: column; gap: 2px; width: 240px; padding: 16px; background: #f3f3ee; font-family: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif; } .ds-wordmark { width: fit-content; margin-bottom: 12px; color: #1d1d1b; font-size: 28px; font-weight: 800; font-variation-settings: 'opsz' 96; letter-spacing: -0.03em; line-height: 1; text-decoration: none; text-shadow: -0.06em 0.04em 0 #ff48b0; } .ds-nav-item { display: flex; align-items: center; justify-content: space-between; height: 32px; padding: 0 8px; border-radius: 3.2px; color: #1d1d1b; font-size: 14px; text-decoration: none; } .ds-nav-item:hover { background: #e7e7e0; } .ds-nav-item:focus-visible { outline: 2px solid #0078bf; } .ds-nav-item--active, .ds-nav-item--active:hover { background: var(--ink-a); font-weight: 700; } .ds-badge { padding: 2px 6px; border-radius: 2.4px; background: var(--ink-a); color: #1d1d1b; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Riso Club Zine",
+    "overview": "Every room is a small zine printed in its own two risograph inks, and the home queue is the newest issue. The stock is cool, bright paper with riso-black type; colour enters only as ink, laid down flat and at full strength, never tinted, never as a gradient wash. A reader should know which room a link came from by its ink before reading a word.\n\nThe world is dense and quiet. Rows sit on hairline rules, not cards. Hierarchy comes from weight and ink rather than from many sizes: heavy lowercase-feeling Bricolage Grotesque for names and titles, a small regular size for everything else. The signature is the print itself: link previews are rendered as two-ink halftone duotones in the room's pair, a pixel off register, and they register to full colour on hover and in the viewer. Live arrivals print in once with a two-pass registration slide, then sit still.\n\nIt is never louder than the content friends share, and never childish: no thick black boxes, no hard offset box shadows, no sticker-like chrome. Light and dark both ship; dark mode is near-black stock where the light ink becomes the type colour.",
+    "keyCharacteristics": [
+      "Cool white paper and riso-black ink, with six fixed two-ink pairs assigned per room.",
+      "Ink always at full strength; one pair per room, one room's pair per row.",
+      "Weight and ink rank content, not size.",
+      "Hairline rules and 4px corners; flat surfaces.",
+      "Halftone duotone previews that register to full colour on hover."
+    ],
+    "rules": [
+      {
+        "name": "The Full Strength Rule",
+        "body": "Room inks are never tinted, faded or given alpha. Wherever a room appears (band, sidebar row, badge, spot, highlight, preview) its ink is solid.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Pair Rule",
+        "body": "Anything inside a room's scope is printed in that room's pair only, set by `inkVars()` on the container. A row never carries two rooms' inks.",
+        "section": "colors"
+      },
+      {
+        "name": "The Black On Ink Rule",
+        "body": "Type on a light-ink fill is riso-black in both modes. Light type never sits on a light ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Sizes Rule",
+        "body": "A link row uses two type sizes, 16px and 13px. Rank inside it by weight (800 / 600 / 400) and ink, never by a third size.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Stock Rule",
+        "body": "Surfaces are flat paper. No hard offset box shadows and no thick black outlines; the only offset in the world is ink misregistration (the wordmark overprint and the halftone's second plate).",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do scope every room surface with `inkVars()` and read `--ink-a`, `--ink-b` and `--ink-text`; never hard-code a room's hex.",
+      "Do keep room inks at full strength and put riso-black type on every light-ink fill.",
+      "Do rank within a row by weight and ink across exactly two sizes (16px and 13px).",
+      "Do separate feed rows with hairline rules and keep corners at 4px or less.",
+      "Do print previews through the riso thumbnail and let hover register them to full colour.",
+      "Do ship every surface in both paper and night stock."
+    ],
+    "donts": [
+      "Don't tint, fade or apply alpha to a room ink, or mix two rooms' inks in one row.",
+      "Don't use hard offset box shadows or thick black outlines; the only offset is ink misregistration.",
+      "Don't wrap feed items in shadowed cards.",
+      "Don't add a third type size to a link row.",
+      "Don't let chrome outshout embedded content: ink marks identity and state, not decoration."
+    ]
+  }
+}

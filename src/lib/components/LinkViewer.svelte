@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { buildCommentTree } from '#lib/comment-tree.ts';
 	import { embedFor } from '#lib/embed.ts';
+	import { inkVars } from '#lib/ink.ts';
+	import { getRoomInks } from '#lib/room-inks.ts';
 	import { refreshOnChange } from '#lib/refresh-on-change.svelte.ts';
 	import { untrack } from 'svelte';
 	import { addComment, markSeen, thread } from '#lib/remote/links.remote.ts';
@@ -24,6 +26,7 @@
 	}: { linkId: string; meId: string; role: Role; onDeleted?: () => void } =
 		$props();
 
+	const inks = getRoomInks();
 	refreshOnChange(() => [thread(linkId)]);
 	// Viewing a link takes it out of the home queue.
 	$effect(() => {
@@ -44,7 +47,7 @@
 </script>
 
 <!-- Side by side when there's room (the modal), stacked otherwise (narrow screens, the link's page). -->
-<div class="@container size-full">
+<div class="@container size-full" {...inkVars(inks.of(link.room_id))}>
 	<div class="flex h-full flex-col overflow-y-auto @3xl:flex-row @3xl:overflow-hidden">
 		<div
 			class="flex h-[60vh] shrink-0 items-center justify-center bg-black @3xl:h-auto @3xl:min-w-0 @3xl:flex-1"
@@ -53,10 +56,10 @@
 		</div>
 
 		<aside class="bg-background flex flex-col @3xl:min-h-0 @3xl:w-88 @3xl:shrink-0 @3xl:border-l">
-			<header class="flex items-center gap-2 border-b p-3">
+			<header class="border-b-ink-b flex items-center gap-2 border-b-2 p-3">
 				<UserAvatar name={link.author?.name ?? '?'} image={link.author?.image} />
 				<div class="min-w-0 flex-1 text-xs">
-					<p class="truncate font-medium">{link.author?.name ?? 'Deleted user'}</p>
+					<p class="truncate font-semibold">{link.author?.name ?? 'Deleted user'}</p>
 					<p class="text-muted-foreground truncate">
 						{timeAgo(link.created_at)}{link.edited_at ? ' · edited' : ''}
 					</p>
@@ -85,8 +88,8 @@
 			<div class="space-y-6 p-4 @3xl:flex-1 @3xl:overflow-y-auto">
 				<div class="space-y-2">
 					<div class="space-y-0.5">
-						<p class="text-muted-foreground truncate text-xs">{preview?.site_name ?? host}</p>
-						<p class="font-medium break-words">{title}</p>
+						<p class="text-ink-text truncate text-[0.8125rem] font-semibold">{preview?.site_name ?? host}</p>
+						<p class="text-lg leading-snug font-extrabold tracking-tight break-words">{title}</p>
 					</div>
 					<LinkNote linkId={link.id} note={link.note} bind:editing />
 				</div>

@@ -41,9 +41,9 @@
 	}
 </script>
 
-<Card.Root class="mx-auto mt-12 w-full max-w-sm">
+<Card.Root class="mx-auto mt-8 w-full max-w-sm">
 	<Card.Header>
-		<Card.Title>Sign in</Card.Title>
+		<Card.Title class="room-band w-fit text-2xl">Sign in</Card.Title>
 		<Card.Description>Welcome back to your rooms.</Card.Description>
 	</Card.Header>
 	<Card.Content>

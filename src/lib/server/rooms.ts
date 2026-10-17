@@ -62,6 +62,7 @@ export async function listRooms(userId: string) {
       "room.title",
       "room.updated_at",
       "me.role",
+      "me.joined_at",
       eb.fn
         .coalesce(
           eb

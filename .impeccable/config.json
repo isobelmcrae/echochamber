@@ -1,0 +1,22 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "*",
+        "files": [".impeccable/mocks/decision/**"],
+        "createdAt": "2026-10-17T04:08:54.615Z",
+        "reason": "decision-round sketches deliberately use the canon's and Metro's reference faces"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": ["src/lib/components/RisoImage.svelte"],
+        "createdAt": "2026-10-17T04:14:57.434Z",
+        "reason": "src comes from Svelte's {src} shorthand, which the detector reads as missing"
+      }
+    ]
+  }
+}

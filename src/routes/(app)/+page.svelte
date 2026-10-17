@@ -3,12 +3,16 @@
 	import { page } from '$app/state';
 	import LinkCard from '#lib/components/LinkCard.svelte';
 	import LinkModal from '#lib/components/LinkModal.svelte';
+	import { inkVars } from '#lib/ink.ts';
+	import { getRoomInks } from '#lib/room-inks.ts';
+	import { printIn } from '#lib/print-in.ts';
 	import { refreshOnChange } from '#lib/refresh-on-change.svelte.ts';
 	import { queue as getQueue } from '#lib/remote/links.remote.ts';
 	import { home } from '#lib/remote/rooms.remote.ts';
 	import { roomName } from '#lib/room-name.ts';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import * as Empty from '#lib/components/ui/empty/index.js';
+	import ArrowRightIcon from '@lucide/svelte/icons/arrow-right';
 	import MessagesSquareIcon from '@lucide/svelte/icons/messages-square';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import { getNewRoom } from './new-room.ts';
@@ -20,6 +24,7 @@
 
 	let { data }: PageProps = $props();
 	const newRoom = getNewRoom();
+	const inks = getRoomInks();
 	refreshOnChange(() => [getQueue()]);
 	const { rooms, invites } = $derived(await home());
 	const queue = $derived(await getQueue());
@@ -85,24 +90,29 @@
 	/>
 {/if}
 
-<div class="flex flex-1 flex-col gap-6">
+<div class="flex flex-1 flex-col gap-8">
 	<PendingInvites {invites} meId={data.me.id} />
 
 	{#if groups.length > 0}
 		{#each groups as group, i (`${group.room.id}:${i}`)}
-			<section class="flex flex-col gap-4">
-				<h2 class="truncate text-lg font-semibold">
-					<a href="/rooms/{group.room.id}" class="hover:underline">
-						{roomName(group.room, data.me.id)}
+			<section class="flex flex-col" {...inkVars(inks.of(group.room.id))}>
+				<h2 class="flex items-center gap-2.5 text-[1.625rem]">
+					<a href="/rooms/{group.room.id}" class="room-band group/room min-w-0">
+						<span class="truncate">{roomName(group.room, data.me.id)}</span>
+						<ArrowRightIcon
+							class="size-[0.55em] shrink-0 stroke-3 transition-transform group-hover/room:translate-x-0.5"
+						/>
 					</a>
+					<span class="room-rule" aria-hidden="true"></span>
 				</h2>
-				<ul class="flex flex-col gap-4">
+				<ul class="flex flex-col">
 					{#each group.items as item (item.link.id)}
-						<li>
+						<li in:printIn class="border-b last:border-b-0">
 							<LinkCard
 								link={item.link}
 								meId={data.me.id}
 								role={item.room.role}
+								unread={live.some((i) => i.link.id === item.link.id)}
 								onOpen={() => openLink(item)}
 								onDeleted={() => removeLink(item.link.id)}
 							/>

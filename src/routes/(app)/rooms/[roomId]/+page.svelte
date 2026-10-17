@@ -3,6 +3,9 @@
 	import { page } from '$app/state';
 	import { untrack } from 'svelte';
 	import { attempt } from '#lib/attempt.ts';
+	import { inkVars } from '#lib/ink.ts';
+	import { getRoomInks } from '#lib/room-inks.ts';
+	import { printIn } from '#lib/print-in.ts';
 	import LinkCard from '#lib/components/LinkCard.svelte';
 	import { feed, olderLinks, postLink } from '#lib/remote/links.remote.ts';
 	import { refreshOnChange } from '#lib/refresh-on-change.svelte.ts';
@@ -22,6 +25,7 @@
 	type Link = Awaited<ReturnType<typeof feed>>['links'][number];
 
 	let { data }: PageProps = $props();
+	const inks = getRoomInks();
 	const roomId = $derived(page.params.roomId!);
 	refreshOnChange(() => [getRoom(roomId), feed(roomId)]);
 	const room = $derived(await getRoom(roomId));
@@ -110,9 +114,12 @@
 	/>
 {/if}
 
-<div class="flex flex-1 flex-col gap-6">
-	<div class="flex items-center justify-between gap-4">
-		<h1 class="truncate text-2xl font-semibold">{roomName(room, data.me.id)}</h1>
+<div class="flex flex-1 flex-col gap-6" {...inkVars(inks.of(roomId))}>
+	<div class="flex items-center gap-3">
+		<h1 class="flex min-w-0 flex-1 items-center gap-2.5 text-[2rem]">
+			<span class="room-band min-w-0"><span class="truncate">{roomName(room, data.me.id)}</span></span>
+			<span class="room-rule" aria-hidden="true"></span>
+		</h1>
 		<Button variant="ghost" size="sm" href="/rooms/{room.id}/settings">
 			<SettingsIcon data-icon="inline-start" />
 			{room.role === 'admin' ? 'Manage' : 'Members'}
@@ -130,9 +137,9 @@
 			</Empty.Header>
 		</Empty.Root>
 	{:else}
-		<ul class="flex flex-col gap-4">
+		<ul class="flex flex-col">
 			{#each links as link (link.id)}
-				<li>
+				<li in:printIn class="border-b last:border-b-0">
 					<LinkCard
 						{link}
 						meId={data.me.id}
@@ -157,7 +164,7 @@
 		class="sticky bottom-4 mt-auto flex flex-col gap-1"
 	>
 		<input {...postLink.fields.roomId.as('hidden', roomId)} />
-		<div class="bg-background rounded-md shadow-lg">
+		<div class="bg-background rounded-md shadow-[0_8px_24px_-6px_rgb(0_0_0/0.18)]">
 			<InputGroup.Root>
 				{#if !drafting}
 					<InputGroup.Addon>

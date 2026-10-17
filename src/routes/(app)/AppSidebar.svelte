@@ -2,10 +2,11 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { authClient } from '#lib/auth-client.ts';
+	import { inkVars } from '#lib/ink.ts';
+	import { getRoomInks } from '#lib/room-inks.ts';
 	import type { home } from '#lib/remote/rooms.remote.ts';
 	import { roomName, roomPerson } from '#lib/room-name.ts';
 	import UserAvatar from '#lib/components/UserAvatar.svelte';
-	import { Badge } from '#lib/components/ui/badge/index.js';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import * as DropdownMenu from '#lib/components/ui/dropdown-menu/index.js';
 	import * as Sidebar from '#lib/components/ui/sidebar/index.js';
@@ -29,6 +30,7 @@
 	} = $props();
 
 	const sidebar = Sidebar.useSidebar();
+	const inks = getRoomInks();
 
 	async function signOut() {
 		await authClient.signOut();
@@ -39,8 +41,8 @@
 
 <Sidebar.Root>
 	<Sidebar.Header class="gap-3 p-4">
-		<a href="/" class="text-lg font-semibold tracking-tight">Echo Chamber</a>
-		<Button variant="outline" onclick={onNewRoom}>
+		<a href="/" class="wordmark w-fit rounded-sm text-[1.75rem]">echochamber</a>
+		<Button onclick={onNewRoom}>
 			<PlusIcon data-icon="inline-start" />
 			New room
 		</Button>
@@ -73,8 +75,12 @@
 						{@const name = roomName(room, me.id)}
 						{@const person = roomPerson(room, me.id)}
 						{@const active = page.params.roomId === room.id}
-						<Sidebar.MenuItem>
-							<Sidebar.MenuButton size="lg" isActive={active}>
+						<Sidebar.MenuItem {...inkVars(inks.of(room.id))}>
+							<Sidebar.MenuButton
+								size="lg"
+								isActive={active}
+								class="data-active:bg-ink-a data-active:text-ink data-active:font-bold"
+							>
 								{#snippet child({ props })}
 									<a
 										href="/rooms/{room.id}"
@@ -84,16 +90,19 @@
 										<UserAvatar {name} image={person?.image} />
 										<span class="flex-1 truncate">{name}</span>
 										{#if !active && room.unread > 0}
-											<Badge aria-label="{room.unread} unread">
+											<span
+												class="bg-ink-a text-ink rounded-sm px-1.5 py-0.5 text-xs font-bold tabular-nums"
+												aria-label="{room.unread} unread"
+											>
 												{room.unread > 9 ? '9+' : room.unread}
-											</Badge>
+											</span>
 										{/if}
 									</a>
 								{/snippet}
 							</Sidebar.MenuButton>
 						</Sidebar.MenuItem>
 					{:else}
-						<p class="text-muted-foreground px-2 text-sm">No rooms yet.</p>
+						<p class="px-2 text-sm opacity-70">No rooms yet.</p>
 					{/each}
 				</Sidebar.Menu>
 			</Sidebar.GroupContent>
@@ -110,7 +119,7 @@
 								<UserAvatar name={me.name} image={me.image} />
 								<div class="grid flex-1 text-left leading-tight">
 									<span class="truncate font-medium">{me.name}</span>
-									<span class="text-muted-foreground truncate text-xs">@{me.username}</span>
+									<span class="truncate text-xs opacity-70">@{me.username}</span>
 								</div>
 								<ChevronsUpDownIcon class="ml-auto" />
 							</Sidebar.MenuButton>

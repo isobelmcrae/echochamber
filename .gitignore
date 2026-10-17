@@ -29,3 +29,11 @@ vite.config.ts.timestamp-*
 
 # Playwright MCP snapshots and screenshots
 /.playwright-mcp/
+
+# Impeccable working files (config.json, surfaces/ and design.json are shared)
+/.impeccable/config.local.json
+/.impeccable/hook.cache.json
+/.impeccable/mocks/
+/.impeccable/questions/
+/.impeccable/review/
+/.impeccable/build/
