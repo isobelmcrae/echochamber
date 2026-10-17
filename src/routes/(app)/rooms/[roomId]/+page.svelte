@@ -141,8 +141,15 @@
 				<Empty.Media variant="icon">
 					<LinkIcon />
 				</Empty.Media>
-				<Empty.Title>Nothing shared yet</Empty.Title>
-				<Empty.Description>Paste the first link below.</Empty.Description>
+				{#if room.personal_of}
+					<Empty.Title>Nothing saved yet</Empty.Title>
+					<Empty.Description>
+						Only you can see this room. Paste a link below to keep it for later.
+					</Empty.Description>
+				{:else}
+					<Empty.Title>Nothing shared yet</Empty.Title>
+					<Empty.Description>Paste the first link below.</Empty.Description>
+				{/if}
 			</Empty.Header>
 		</Empty.Root>
 	{:else if view.current === 'gallery'}
