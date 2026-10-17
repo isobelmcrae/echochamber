@@ -1,3 +1,4 @@
+import { sql } from "kysely";
 import { db } from "./db.ts";
 import { publish } from "./events.ts";
 import { unfurl } from "./unfurl.ts";
@@ -26,14 +27,23 @@ export async function ensurePreview(url: string) {
   return job;
 }
 
+// Without a new preview, a row keeps the one it had (a refetch can fail where
+// the first fetch worked), and only has nothing to show if it never had one.
+const KEEP_STATUS = sql<
+  "ok" | "failed"
+>`case when title is not null or image_url is not null then 'ok' else 'failed' end`;
+
 async function refresh(url: string) {
-  const preview = await unfurl(url).catch(() => null);
+  const result = await unfurl(url).catch(() => null);
+  const fetched_at = Date.now();
+  const frameable =
+    result?.frameable == null ? undefined : result.frameable ? (1 as const) : (0 as const);
   await db
     .updateTable("link_preview")
     .set(
-      preview
-        ? { status: "ok", ...preview, fetched_at: Date.now() }
-        : { status: "failed", fetched_at: Date.now() },
+      result?.preview
+        ? { status: "ok", ...result.preview, frameable: frameable ?? null, fetched_at }
+        : { status: KEEP_STATUS, frameable, fetched_at },
     )
     .where("url", "=", url)
     .execute();

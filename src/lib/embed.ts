@@ -98,8 +98,12 @@ const PROVIDERS: Provider[] = [
 const IMAGE = /\.(avif|gif|jpe?g|png|svg|webp)$/i;
 const VIDEO = /\.(mp4|webm|mov)$/i;
 
-/** Pick how to show a link: a provider's player, the file itself, or the page in a frame. */
-export function embedFor(href: string): Embed {
+/**
+ * Pick how to show a link: a provider's player, the file itself, or the page in
+ * a frame. `frameable` is what the page's headers said when its preview was
+ * fetched; unknown pages get a frame.
+ */
+export function embedFor(href: string, { frameable }: { frameable?: boolean } = {}): Embed {
   const url = new URL(href);
   const provider = PROVIDERS.find((p) => p.host.test(url.hostname));
   const embed = provider?.embed(url);
@@ -107,6 +111,6 @@ export function embedFor(href: string): Embed {
   if (IMAGE.test(url.pathname)) return { kind: "image", src: href };
   if (VIDEO.test(url.pathname)) return { kind: "video", src: href };
   // The app is served over https, which blocks http frames as mixed content.
-  if (url.protocol !== "https:") return { kind: "none" };
+  if (url.protocol !== "https:" || frameable === false) return { kind: "none" };
   return { kind: "frame", src: href, shape: "page" };
 }

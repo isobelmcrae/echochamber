@@ -60,6 +60,8 @@ interface LinkPreviewTable {
   description: string | null;
   image_url: string | null;
   site_name: string | null;
+  /** Whether the page lets other sites frame it; null when unknown. */
+  frameable: 0 | 1 | null;
   fetched_at: number | null;
 }
 

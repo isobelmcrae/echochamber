@@ -1,7 +1,14 @@
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { fetchText, isPublicAddress, oembedEndpoint, parseMeta, usefulPreview } from "./unfurl.ts";
+import {
+  allowsFraming,
+  fetchText,
+  isPublicAddress,
+  oembedEndpoint,
+  parseMeta,
+  usefulPreview,
+} from "./unfurl.ts";
 
 describe("isPublicAddress", () => {
   it("allows public addresses", () => {
@@ -99,6 +106,37 @@ describe("oembedEndpoint", () => {
   });
 });
 
+describe("allowsFraming", () => {
+  it("allows pages that say nothing", () => {
+    expect(allowsFraming({})).toBe(true);
+    expect(allowsFraming({ "content-security-policy": "default-src 'self'" })).toBe(true);
+  });
+
+  it("honours X-Frame-Options", () => {
+    expect(allowsFraming({ "x-frame-options": "DENY" })).toBe(false);
+    expect(allowsFraming({ "x-frame-options": " sameorigin " })).toBe(false);
+    // Browsers ignore the obsolete ALLOW-FROM, so the page frames.
+    expect(allowsFraming({ "x-frame-options": "ALLOW-FROM https://a.test" })).toBe(true);
+  });
+
+  it("honours CSP frame-ancestors over X-Frame-Options", () => {
+    const csp = (v: string) => ({ "content-security-policy": v, "x-frame-options": "DENY" });
+    expect(allowsFraming(csp("frame-ancestors 'none'"))).toBe(false);
+    expect(allowsFraming(csp("default-src *; frame-ancestors 'self' https://a.test"))).toBe(false);
+    expect(allowsFraming(csp("frame-ancestors *"))).toBe(true);
+    expect(allowsFraming(csp("frame-ancestors https:"))).toBe(true);
+  });
+
+  it("needs every policy to allow it, and ignores report-only ones", () => {
+    expect(
+      allowsFraming({ "content-security-policy": ["frame-ancestors *", "frame-ancestors 'none'"] }),
+    ).toBe(false);
+    expect(allowsFraming({ "content-security-policy-report-only": "frame-ancestors 'none'" })).toBe(
+      true,
+    );
+  });
+});
+
 describe("fetchText", () => {
   let server: Server;
   let origin: string;
@@ -109,6 +147,11 @@ describe("fetchText", () => {
       if (req.url === "/page")
         res.writeHead(200, { "content-type": "text/html" }).end("<title>hi</title>");
       else if (req.url === "/to-page") res.writeHead(302, { location: "/page" }).end();
+      else if (req.url === "/to-locked") res.writeHead(302, { location: "/locked" }).end();
+      else if (req.url === "/locked")
+        res
+          .writeHead(200, { "content-type": "text/html", "x-frame-options": "DENY" })
+          .end("<title>locked</title>");
       else if (req.url === "/to-metadata")
         res.writeHead(302, { location: "http://169.254.169.254/latest/meta-data" }).end();
       else if (req.url === "/loop") res.writeHead(302, { location: "/loop" }).end();
@@ -132,11 +175,19 @@ describe("fetchText", () => {
     await expect(fetchText(`${origin}/to-page`, { allow: localOnly })).resolves.toMatchObject({
       url: `${origin}/page`,
       body: "<title>hi</title>",
+      frameable: true,
     });
     await expect(fetchText(`${origin}/to-metadata`, { allow: localOnly })).rejects.toThrow(
       /not allowed/,
     );
     await expect(fetchText(`${origin}/loop`, { allow: localOnly })).rejects.toThrow(/redirects/);
+  });
+
+  it("reports whether the final page may be framed", async () => {
+    await expect(fetchText(`${origin}/to-locked`, { allow: localOnly })).resolves.toMatchObject({
+      url: `${origin}/locked`,
+      frameable: false,
+    });
   });
 
   it("caps size and time, and skips non-text responses", async () => {

@@ -27,7 +27,7 @@
 	const current = $derived(await thread(linkId));
 	const link = $derived(current.link);
 	const tree = $derived(buildCommentTree(current.comments));
-	const embed = $derived(embedFor(link.url));
+	const embed = $derived(embedFor(link.url, { frameable: link.preview?.frameable !== 0 }));
 	const preview = $derived(link.preview?.status === 'ok' ? link.preview : null);
 	const host = $derived(new URL(link.url).hostname.replace(/^www\./, ''));
 	const title = $derived(preview?.title ?? link.url);

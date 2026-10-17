@@ -81,6 +81,22 @@ describe("embedFor", () => {
     expect(embedFor("https://www.youtube.com/@channel")).toMatchObject({ shape: "page" });
   });
 
+  it("doesn't frame pages known to refuse it, but still plays their media", () => {
+    expect(embedFor("https://github.com/sveltejs/kit", { frameable: false })).toEqual({
+      kind: "none",
+    });
+    expect(embedFor("https://example.com/cat.png", { frameable: false })).toMatchObject({
+      kind: "image",
+    });
+    expect(embedFor("https://vimeo.com/76979871", { frameable: false })).toMatchObject({
+      kind: "frame",
+      shape: "video",
+    });
+    expect(embedFor("https://example.com/article", { frameable: true })).toMatchObject({
+      shape: "page",
+    });
+  });
+
   // An https page can't frame plain http (mixed content), so there's nothing to show.
   it("doesn't frame plain http pages", () => {
     expect(embedFor("http://example.com/article")).toEqual({ kind: "none" });

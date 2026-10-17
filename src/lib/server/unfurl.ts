@@ -1,6 +1,7 @@
 import { lookup as dnsLookup, type LookupAddress } from "node:dns";
 import http from "node:http";
 import https from "node:https";
+import type { IncomingHttpHeaders } from "node:http";
 import { BlockList, isIP } from "node:net";
 
 // Fetches link previews without letting users point the server at internal
@@ -58,7 +59,31 @@ type FetchOptions = {
 
 const TEXT_TYPES = /^(text\/html|application\/xhtml\+xml|application\/json)/i;
 
-/** GET a text resource from the public internet. Truncates at `maxBytes`. */
+/**
+ * Whether a page's response lets another site show it in a frame. A CSP
+ * `frame-ancestors` directive overrides X-Frame-Options; we're never the
+ * page's own origin, so only a wildcard (or any https page) lets us in.
+ */
+export function allowsFraming(headers: IncomingHttpHeaders) {
+  const policies = [headers["content-security-policy"] ?? []].flat().flatMap((h) => h.split(","));
+  const ancestors = policies.flatMap((policy) => {
+    const directive = policy
+      .split(";")
+      .map((d) => d.trim().split(/\s+/))
+      .find(([name]) => name?.toLowerCase() === "frame-ancestors");
+    return directive ? [directive.slice(1)] : [];
+  });
+  if (ancestors.length > 0) {
+    return ancestors.every((sources) => sources.some((s) => s === "*" || s === "https:"));
+  }
+  const xfo = [headers["x-frame-options"] ?? []].flat().join(",").trim().toLowerCase();
+  return xfo !== "deny" && xfo !== "sameorigin";
+}
+
+/**
+ * GET a text resource from the public internet. Truncates at `maxBytes`. Also
+ * reports whether the final page could be shown in a frame.
+ */
 export async function fetchText(
   url: string,
   {
@@ -76,77 +101,84 @@ export async function fetchText(
       current = new URL(res.location, current);
       continue;
     }
-    return { url: current.href, body: res.body };
+    return { url: current.href, body: res.body, frameable: allowsFraming(res.headers) };
   }
   throw new Error("Too many redirects");
 }
 
 function request(url: URL, allow: (ip: string) => boolean, deadline: number, maxBytes: number) {
-  return new Promise<{ location?: string; body: string }>((resolve, reject) => {
-    if (url.protocol !== "http:" && url.protocol !== "https:") {
-      return reject(new Error(`Scheme ${url.protocol} is not allowed`));
-    }
-    const host = url.hostname.replace(/^\[|\]$/g, "");
-    if (isIP(host) && !allow(host)) return reject(new Error(`Address ${host} is not allowed`));
+  return new Promise<{ location?: string; body: string; headers: IncomingHttpHeaders }>(
+    (resolve, reject) => {
+      if (url.protocol !== "http:" && url.protocol !== "https:") {
+        return reject(new Error(`Scheme ${url.protocol} is not allowed`));
+      }
+      const host = url.hostname.replace(/^\[|\]$/g, "");
+      if (isIP(host) && !allow(host)) return reject(new Error(`Address ${host} is not allowed`));
 
-    const lookup = (
-      hostname: string,
-      options: { all?: boolean },
-      callback: (err: Error | null, address: string | LookupAddress[], family?: number) => void,
-    ) => {
-      dnsLookup(hostname, { all: true }, (err, addresses) => {
-        if (err) return callback(err, []);
-        const denied = addresses.find((a) => !allow(a.address));
-        if (denied || addresses.length === 0) {
-          return callback(new Error(`Address ${denied?.address ?? hostname} is not allowed`), []);
-        }
-        if (options.all) callback(null, addresses);
-        else callback(null, addresses[0]!.address, addresses[0]!.family);
-      });
-    };
-
-    const client = url.protocol === "https:" ? https : http;
-    const req = client.get(
-      url,
-      {
-        lookup,
-        headers: {
-          "user-agent": "EchoChamberBot/1.0 (link previews)",
-          accept: "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.1",
-        },
-        timeout: Math.max(1, deadline - Date.now()),
-      },
-      (res) => {
-        const status = res.statusCode ?? 0;
-        if (status >= 300 && status < 400 && res.headers.location) {
-          res.resume();
-          return resolve({ location: res.headers.location, body: "" });
-        }
-        if (status >= 400) {
-          res.resume();
-          return reject(new Error(`HTTP ${status}`));
-        }
-        if (!TEXT_TYPES.test(res.headers["content-type"] ?? "")) {
-          res.resume();
-          return reject(new Error(`Unsupported content type ${res.headers["content-type"]}`));
-        }
-        const chunks: Buffer[] = [];
-        let size = 0;
-        res.on("data", (chunk: Buffer) => {
-          chunks.push(chunk);
-          size += chunk.length;
-          if (size >= maxBytes) {
-            res.destroy();
-            resolve({ body: Buffer.concat(chunks).subarray(0, maxBytes).toString("utf8") });
+      const lookup = (
+        hostname: string,
+        options: { all?: boolean },
+        callback: (err: Error | null, address: string | LookupAddress[], family?: number) => void,
+      ) => {
+        dnsLookup(hostname, { all: true }, (err, addresses) => {
+          if (err) return callback(err, []);
+          const denied = addresses.find((a) => !allow(a.address));
+          if (denied || addresses.length === 0) {
+            return callback(new Error(`Address ${denied?.address ?? hostname} is not allowed`), []);
           }
+          if (options.all) callback(null, addresses);
+          else callback(null, addresses[0]!.address, addresses[0]!.family);
         });
-        res.on("end", () => resolve({ body: Buffer.concat(chunks).toString("utf8") }));
-        res.on("error", reject);
-      },
-    );
-    req.on("timeout", () => req.destroy(new Error("Request timed out")));
-    req.on("error", reject);
-  });
+      };
+
+      const client = url.protocol === "https:" ? https : http;
+      const req = client.get(
+        url,
+        {
+          lookup,
+          headers: {
+            "user-agent": "EchoChamberBot/1.0 (link previews)",
+            accept: "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.1",
+          },
+          timeout: Math.max(1, deadline - Date.now()),
+        },
+        (res) => {
+          const status = res.statusCode ?? 0;
+          if (status >= 300 && status < 400 && res.headers.location) {
+            res.resume();
+            return resolve({ location: res.headers.location, body: "", headers: res.headers });
+          }
+          if (status >= 400) {
+            res.resume();
+            return reject(new Error(`HTTP ${status}`));
+          }
+          if (!TEXT_TYPES.test(res.headers["content-type"] ?? "")) {
+            res.resume();
+            return reject(new Error(`Unsupported content type ${res.headers["content-type"]}`));
+          }
+          const chunks: Buffer[] = [];
+          let size = 0;
+          res.on("data", (chunk: Buffer) => {
+            chunks.push(chunk);
+            size += chunk.length;
+            if (size >= maxBytes) {
+              res.destroy();
+              resolve({
+                body: Buffer.concat(chunks).subarray(0, maxBytes).toString("utf8"),
+                headers: res.headers,
+              });
+            }
+          });
+          res.on("end", () =>
+            resolve({ body: Buffer.concat(chunks).toString("utf8"), headers: res.headers }),
+          );
+          res.on("error", reject);
+        },
+      );
+      req.on("timeout", () => req.destroy(new Error("Request timed out")));
+      req.on("error", reject);
+    },
+  );
 }
 
 // ── Parsing ────────────────────────────────────────────────────────────────
@@ -222,25 +254,35 @@ export function oembedEndpoint(url: string) {
   return provider ? `${provider.endpoint}?format=json&url=${encodeURIComponent(url)}` : null;
 }
 
-/** Best-effort preview for a URL; null when nothing useful was found. Throws on network errors. */
-export async function unfurl(url: string): Promise<Preview | null> {
+/**
+ * Best-effort preview for a URL (null when nothing useful was found), and
+ * whether the page may be framed (null when only oEmbed was asked, whose
+ * sites the viewer shows through their own players). Throws on network errors.
+ */
+export async function unfurl(
+  url: string,
+): Promise<{ preview: Preview | null; frameable: boolean | null }> {
   const endpoint = oembedEndpoint(url);
   if (endpoint) {
     try {
       const data = JSON.parse((await fetchText(endpoint)).body) as Record<string, unknown>;
       const str = (v: unknown) => (typeof v === "string" ? v : undefined);
-      return {
+      const preview = {
         title: clean(str(data.title), 300),
         description: str(data.author_name) ? `by ${str(data.author_name)}` : null,
         image_url: httpUrl(str(data.thumbnail_url)),
         site_name: clean(str(data.provider_name), 100),
       };
+      return { preview, frameable: null };
     } catch {
       // Fall back to the page itself.
     }
   }
   const page = await fetchText(url);
-  return usefulPreview(parseMeta(page.body, page.url), page.url);
+  return {
+    preview: usefulPreview(parseMeta(page.body, page.url), page.url),
+    frameable: page.frameable,
+  };
 }
 
 /** Null when a page only offers its site's name (e.g. Instagram behind a login wall). */

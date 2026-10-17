@@ -12,5 +12,5 @@ await migrate(db);
 // Posting a link fetches its preview in the background; tests never touch the
 // network. Tests that care stub `unfurl` themselves.
 beforeEach(() => {
-  vi.spyOn(unfurl, "unfurl").mockResolvedValue(null);
+  vi.spyOn(unfurl, "unfurl").mockResolvedValue({ preview: null, frameable: null });
 });
