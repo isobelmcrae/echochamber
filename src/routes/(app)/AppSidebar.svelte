@@ -11,6 +11,7 @@
 	import * as DropdownMenu from '#lib/components/ui/dropdown-menu/index.js';
 	import * as Sidebar from '#lib/components/ui/sidebar/index.js';
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
+	import InfoIcon from '@lucide/svelte/icons/info';
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import MailIcon from '@lucide/svelte/icons/mail';
 	import MonitorIcon from '@lucide/svelte/icons/monitor';
@@ -18,6 +19,7 @@
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import { setMode, userPrefersMode } from 'mode-watcher';
+	import AboutDialog from './AboutDialog.svelte';
 
 	type Room = Awaited<ReturnType<typeof home>>['rooms'][number];
 
@@ -34,6 +36,7 @@
 	} = $props();
 
 	const sidebar = Sidebar.useSidebar();
+	let aboutOpen = $state(false);
 	const inks = getRoomInks();
 
 	const themes = [
@@ -150,6 +153,10 @@
 						</DropdownMenu.RadioGroup>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Group>
+							<DropdownMenu.Item onclick={() => (aboutOpen = true)}>
+								<InfoIcon />
+								About
+							</DropdownMenu.Item>
 							<DropdownMenu.Item onclick={signOut}>
 								<LogOutIcon />
 								Sign out
@@ -161,3 +168,5 @@
 		</Sidebar.Menu>
 	</Sidebar.Footer>
 </Sidebar.Root>
+
+<AboutDialog bind:open={aboutOpen} />
