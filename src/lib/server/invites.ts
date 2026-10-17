@@ -109,7 +109,7 @@ export async function acceptInvite(userId: string, roomId: string) {
     }
     await tx
       .insertInto("room_member")
-      .values({ room_id: roomId, user_id: userId, role: invite.role, joined_at: Date.now() })
+      .values({ room_id: roomId, user_id: userId, role: invite.role, ...joinedNow() })
       .onConflict((oc) => oc.doNothing())
       .execute();
   });
@@ -225,7 +225,7 @@ export async function redeemInviteLink(userId: string, token: string) {
 
     const { numInsertedOrUpdatedRows } = await tx
       .insertInto("room_member")
-      .values({ room_id, user_id: userId, role: "member", joined_at: Date.now() })
+      .values({ room_id, user_id: userId, role: "member", ...joinedNow() })
       .onConflict((oc) => oc.doNothing())
       .executeTakeFirst();
     if (numInsertedOrUpdatedRows === 0n) return room_id; // already a member
@@ -245,4 +245,10 @@ export async function redeemInviteLink(userId: string, token: string) {
   });
   await roomChanged(roomId);
   return roomId;
+}
+
+/** New members start caught up: the links already in the room aren't news to them. */
+function joinedNow() {
+  const now = Date.now();
+  return { joined_at: now, last_read_at: now };
 }

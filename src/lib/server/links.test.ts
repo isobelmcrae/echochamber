@@ -112,7 +112,7 @@ describe("queue", () => {
   const queueUrls = async (userId: string) =>
     (await listQueue(userId)).map((g) => [g.room.title, g.links.map((l) => l.url)]);
 
-  it("groups unseen links by room, the room with the newest one first, each oldest first", async () => {
+  it("groups unseen links by room, the room with the newest one first, each newest first", async () => {
     const [alice, bob] = [await createUser("alice"), await createUser("bob")];
     const rooms: string[] = [];
     for (const title of ["one", "two", "three"]) {
@@ -135,9 +135,9 @@ describe("queue", () => {
     await post(two, "2b");
 
     expect(await queueUrls(bob.id)).toEqual([
-      ["two", ["https://example.com/2a", "https://example.com/2b"]],
-      ["three", ["https://example.com/3a", "https://example.com/3b", "https://example.com/3c"]],
-      ["one", ["https://example.com/1a", "https://example.com/1b"]],
+      ["two", ["https://example.com/2b", "https://example.com/2a"]],
+      ["three", ["https://example.com/3c", "https://example.com/3b", "https://example.com/3a"]],
+      ["one", ["https://example.com/1b", "https://example.com/1a"]],
     ]);
     // Your own links are never news to you.
     expect(await queueUrls(alice.id)).toEqual([]);

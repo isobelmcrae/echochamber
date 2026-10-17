@@ -76,9 +76,8 @@ function selectUnseen(userId: string) {
 }
 
 /**
- * The user's unseen links grouped by room: the room with the newest one first,
- * each room's links oldest first so they read in order. Capped to the newest
- * `limit` links.
+ * The user's unseen links grouped by room, the room with the newest one first,
+ * newest first within each. Capped to the newest `limit` links.
  */
 export async function listQueue(userId: string, { limit = 200 } = {}) {
   const links = await selectUnseen(userId)
@@ -93,7 +92,7 @@ export async function listQueue(userId: string, { limit = 200 } = {}) {
     if (!room) continue;
     const group = groups.get(room.id) ?? { room, links: [] };
     groups.set(room.id, group);
-    group.links.unshift(link);
+    group.links.push(link);
   }
   return [...groups.values()];
 }

@@ -12,6 +12,7 @@ import {
   redeemInviteLink,
   revokeInviteLink,
 } from "./invites.ts";
+import { listQueue, postLink } from "./links.ts";
 import { createRoom, getRoom, listRooms } from "./rooms.ts";
 import { addMember, createUser } from "./test-utils.ts";
 
@@ -143,5 +144,33 @@ describe("starting a room with someone", () => {
     await inviteByUsername(alice.id, roomId, bob.username, "admin");
     await acceptInvite(bob.id, roomId);
     expect((await getRoom(roomId, bob.id)).role).toBe("admin");
+  });
+});
+
+describe("joining a room", () => {
+  beforeEach(() => vi.useFakeTimers({ toFake: ["Date"] }));
+  afterEach(() => vi.useRealTimers());
+
+  const unread = async (userId: string, roomId: string) =>
+    (await listRooms(userId)).find((r) => r.id === roomId)?.unread;
+
+  it("treats the links already in the room as read, by invite or by link", async () => {
+    const { alice, bob, roomId } = await setup();
+    const carol = await createUser("carol");
+    await postLink(alice.id, roomId, { url: "https://example.com/old" });
+    vi.setSystemTime(Date.now() + 1000);
+
+    await inviteByUsername(alice.id, roomId, bob.username);
+    await acceptInvite(bob.id, roomId);
+    const { token } = await createInviteLink(alice.id, roomId, {});
+    await redeemInviteLink(carol.id, token);
+    expect(await unread(bob.id, roomId)).toBe(0);
+    expect(await unread(carol.id, roomId)).toBe(0);
+    expect(await listQueue(bob.id)).toEqual([]);
+
+    vi.setSystemTime(Date.now() + 1000);
+    await postLink(alice.id, roomId, { url: "https://example.com/new" });
+    expect(await unread(bob.id, roomId)).toBe(1);
+    expect(await unread(carol.id, roomId)).toBe(1);
   });
 });
