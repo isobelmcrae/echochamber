@@ -13,6 +13,7 @@
 	import { roomName } from '#lib/room-name.ts';
 	import { isTextEntry } from '#lib/text-entry.ts';
 	import { normalizeUrl } from '#lib/url.ts';
+	import { resetWhenEmptied } from '#lib/reset-when-emptied.ts';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import * as Empty from '#lib/components/ui/empty/index.js';
 	import * as Field from '#lib/components/ui/field/index.js';
@@ -183,6 +184,7 @@
 					autocomplete="off"
 					inputmode="url"
 					aria-label="Link"
+					{@attach resetWhenEmptied}
 					class="text-base font-medium md:text-base"
 				/>
 				{#if !drafting}
