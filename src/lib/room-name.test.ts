@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { roomName } from "./room-name.ts";
+import { roomName, roomPerson } from "./room-name.ts";
 
 const me = { id: "me", name: "Me" };
 const people = ["Ana", "Ben", "Cy", "Di"].map((name) => ({ id: name, name }));
@@ -19,5 +19,16 @@ describe("roomName", () => {
 
   it("handles an empty room", () => {
     expect(roomName({ title: null, members: [me] }, "me")).toBe("Just you");
+  });
+});
+
+describe("roomPerson", () => {
+  it("is the other member of an untitled 1:1", () => {
+    expect(roomPerson({ title: null, members: [me, people[0]] }, "me")).toBe(people[0]);
+  });
+
+  it("is nobody in a titled room or a group", () => {
+    expect(roomPerson({ title: "Reels", members: [me, people[0]] }, "me")).toBeNull();
+    expect(roomPerson({ title: null, members: [me, ...people] }, "me")).toBeNull();
   });
 });

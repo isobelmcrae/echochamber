@@ -77,7 +77,7 @@ export async function listRooms(userId: string) {
         eb
           .selectFrom("room_member")
           .innerJoin("user", "user.id", "room_member.user_id")
-          .select(["user.id", "user.name", "user.username"])
+          .select(["user.id", "user.name", "user.username", "user.image"])
           .whereRef("room_member.room_id", "=", "room.id")
           .orderBy("room_member.joined_at"),
       ).as("members"),

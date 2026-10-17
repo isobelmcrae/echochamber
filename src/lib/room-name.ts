@@ -8,3 +8,13 @@ export function roomName(room: { title: string | null; members: Member[] }, meId
   if (others.length <= 3) return others.join(", ");
   return `${others.slice(0, 2).join(", ")} and ${others.length - 2} others`;
 }
+
+/** The other person in an untitled 1:1, whose face stands in for the room; otherwise null. */
+export function roomPerson<M extends Member>(
+  room: { title: string | null; members: M[] },
+  meId: string,
+) {
+  if (room.title) return null;
+  const others = room.members.filter((m) => m.id !== meId);
+  return others.length === 1 ? others[0]! : null;
+}

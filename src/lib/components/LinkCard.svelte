@@ -7,6 +7,7 @@
 	import * as Card from '#lib/components/ui/card/index.js';
 	import * as DropdownMenu from '#lib/components/ui/dropdown-menu/index.js';
 	import { Textarea } from '#lib/components/ui/textarea/index.js';
+	import UserAvatar from './UserAvatar.svelte';
 	import EllipsisIcon from '@lucide/svelte/icons/ellipsis';
 	import MessageCircleIcon from '@lucide/svelte/icons/message-circle';
 
@@ -84,10 +85,12 @@
 		{/if}
 
 		<div class="text-muted-foreground flex items-center justify-between gap-2 text-xs">
-			<span class="truncate">
-				{link.author?.name ?? 'Deleted user'} · {timeAgo(link.created_at)}{link.edited_at
+			<span class="flex min-w-0 items-center gap-1.5">
+				<UserAvatar size="sm" name={link.author?.name ?? '?'} image={link.author?.image} />
+				<span class="truncate">{link.author?.name ?? 'Deleted user'} · {timeAgo(link.created_at)}{link.edited_at
 					? ' · edited'
-					: ''}
+					: ''}</span
+				>
 			</span>
 			<div class="flex shrink-0 items-center gap-1">
 				<Button variant="ghost" size="sm" href="/rooms/{link.room_id}/links/{link.id}">

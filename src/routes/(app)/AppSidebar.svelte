@@ -3,8 +3,8 @@
 	import { page } from '$app/state';
 	import { authClient } from '#lib/auth-client.ts';
 	import type { home } from '#lib/remote/rooms.remote.ts';
-	import { roomName } from '#lib/room-name.ts';
-	import * as Avatar from '#lib/components/ui/avatar/index.js';
+	import { roomName, roomPerson } from '#lib/room-name.ts';
+	import UserAvatar from '#lib/components/UserAvatar.svelte';
 	import { Badge } from '#lib/components/ui/badge/index.js';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import * as DropdownMenu from '#lib/components/ui/dropdown-menu/index.js';
@@ -24,20 +24,11 @@
 	}: {
 		rooms: Room[];
 		invites: number;
-		me: { id: string; name: string; username: string };
+		me: { id: string; name: string; username: string; image: string | null };
 		onNewRoom: () => void;
 	} = $props();
 
 	const sidebar = Sidebar.useSidebar();
-
-	function initials(name: string) {
-		return name
-			.split(/[\s,]+/)
-			.filter(Boolean)
-			.slice(0, 2)
-			.map((word) => word[0]!.toUpperCase())
-			.join('');
-	}
 
 	async function signOut() {
 		await authClient.signOut();
@@ -80,6 +71,7 @@
 				<Sidebar.Menu>
 					{#each rooms as room (room.id)}
 						{@const name = roomName(room, me.id)}
+						{@const person = roomPerson(room, me.id)}
 						{@const active = page.params.roomId === room.id}
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton size="lg" isActive={active}>
@@ -89,9 +81,7 @@
 										{...props}
 										onclick={() => sidebar.setOpenMobile(false)}
 									>
-										<Avatar.Root class="size-8">
-											<Avatar.Fallback>{initials(name)}</Avatar.Fallback>
-										</Avatar.Root>
+										<UserAvatar {name} image={person?.image} />
 										<span class="flex-1 truncate">{name}</span>
 										{#if !active && room.unread > 0}
 											<Badge aria-label="{room.unread} unread">
@@ -117,9 +107,7 @@
 					<DropdownMenu.Trigger>
 						{#snippet child({ props })}
 							<Sidebar.MenuButton size="lg" {...props}>
-								<Avatar.Root class="size-8">
-									<Avatar.Fallback>{initials(me.name)}</Avatar.Fallback>
-								</Avatar.Root>
+								<UserAvatar name={me.name} image={me.image} />
 								<div class="grid flex-1 text-left leading-tight">
 									<span class="truncate font-medium">{me.name}</span>
 									<span class="text-muted-foreground truncate text-xs">@{me.username}</span>

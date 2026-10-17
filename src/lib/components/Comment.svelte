@@ -6,6 +6,7 @@
 	import { timeAgo } from '#lib/time.ts';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Textarea } from '#lib/components/ui/textarea/index.js';
+	import UserAvatar from './UserAvatar.svelte';
 	import Comment from './Comment.svelte';
 
 	type Flat = Awaited<ReturnType<typeof thread>>['comments'][number];
@@ -40,7 +41,8 @@
 		{#if node.deleted}
 			<p class="text-muted-foreground text-sm italic">[deleted]</p>
 		{:else}
-			<p class="text-muted-foreground text-xs">
+			<p class="text-muted-foreground flex items-center gap-1.5 text-xs">
+				<UserAvatar size="sm" name={node.author?.name ?? '?'} image={node.author?.image} />
 				<span class="text-foreground font-medium">{node.author?.name ?? 'Deleted user'}</span>
 				· {timeAgo(node.created_at)}{node.edited_at ? ' · edited' : ''}
 			</p>

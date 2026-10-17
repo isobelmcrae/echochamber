@@ -18,6 +18,7 @@
 	import { Input } from '#lib/components/ui/input/index.js';
 	import EllipsisIcon from '@lucide/svelte/icons/ellipsis';
 	import InviteCard from './InviteCard.svelte';
+	import UserAvatar from '#lib/components/UserAvatar.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -68,12 +69,15 @@
 			<ul class="divide-y">
 				{#each room.members as member (member.id)}
 					<li class="flex items-center justify-between gap-3 py-2">
-						<div class="min-w-0">
+						<div class="flex min-w-0 items-center gap-3">
+							<UserAvatar name={member.name} image={member.image} />
+							<div class="min-w-0">
 							<p class="truncate font-medium">
 								{member.name}
 								{#if member.id === data.me.id}<span class="text-muted-foreground">(you)</span>{/if}
 							</p>
 							<p class="text-muted-foreground truncate text-sm">@{member.username}</p>
+							</div>
 						</div>
 						<div class="flex items-center gap-2">
 							{#if member.role === 'admin'}<Badge variant="secondary">Admin</Badge>{/if}
