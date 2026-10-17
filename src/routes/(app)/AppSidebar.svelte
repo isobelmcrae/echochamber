@@ -13,7 +13,11 @@
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import MailIcon from '@lucide/svelte/icons/mail';
+	import MonitorIcon from '@lucide/svelte/icons/monitor';
+	import MoonIcon from '@lucide/svelte/icons/moon';
 	import PlusIcon from '@lucide/svelte/icons/plus';
+	import SunIcon from '@lucide/svelte/icons/sun';
+	import { setMode, userPrefersMode } from 'mode-watcher';
 
 	type Room = Awaited<ReturnType<typeof home>>['rooms'][number];
 
@@ -31,6 +35,12 @@
 
 	const sidebar = Sidebar.useSidebar();
 	const inks = getRoomInks();
+
+	const themes = [
+		{ mode: 'light', label: 'Light', icon: SunIcon },
+		{ mode: 'dark', label: 'Dark', icon: MoonIcon },
+		{ mode: 'system', label: 'System', icon: MonitorIcon }
+	] as const;
 
 	async function signOut() {
 		await authClient.signOut();
@@ -126,6 +136,19 @@
 						{/snippet}
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content side="top" align="start" class="w-(--bits-dropdown-menu-anchor-width)">
+						<DropdownMenu.RadioGroup
+							value={userPrefersMode.current}
+							onValueChange={(mode) => setMode(mode as (typeof themes)[number]['mode'])}
+						>
+							<DropdownMenu.GroupHeading>Theme</DropdownMenu.GroupHeading>
+							{#each themes as { mode, label, icon: Icon } (mode)}
+								<DropdownMenu.RadioItem value={mode}>
+									<Icon />
+									{label}
+								</DropdownMenu.RadioItem>
+							{/each}
+						</DropdownMenu.RadioGroup>
+						<DropdownMenu.Separator />
 						<DropdownMenu.Group>
 							<DropdownMenu.Item onclick={signOut}>
 								<LogOutIcon />
