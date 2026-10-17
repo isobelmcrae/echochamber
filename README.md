@@ -6,6 +6,8 @@ Private rooms for sharing links with friends. Invite people to a room, post
 links (with automatic previews), and talk about them in comments, all updating
 live. Built with SvelteKit, Svelte 5, Better Auth, and SQLite.
 
+[![Deploy with Zenith](https://cdn.zenith.hosting/buttons/deploy-with-zenith.svg)](https://zenith.hosting/host/echochamber)
+
 ## Local development
 
 Requires [Bun](https://bun.sh) and Node 24 (better-sqlite3 builds a native
